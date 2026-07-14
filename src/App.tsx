@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import AuthPage from './Pages/login';
 import {
   ShoppingBag, Menu, X, Minus, Plus, Trash2, ArrowLeft, MessageCircle,
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
   CheckCircle, AlertCircle, AlertTriangle, Star,
 } from 'lucide-react';
-
 /* ─── Scroll To Top on Route Change ─── */
 function ScrollToTop() { const { pathname } = useLocation(); useEffect(() => { window.scrollTo(0, 0); }, [pathname]); return null; }
 
@@ -41,6 +41,7 @@ function Header() {
   const links = [
     { to: '/', label: 'Home' }, { to: '/shop', label: 'Shop' },
     { to: '/terms-buyers', label: 'Terms & Conditions' }, { to: '/vendor-register', label: 'Become a Vendor' },
+    { to: '/login', label: 'Login' },
   ];
   return (
     <header className="fixed top-0 left-0 right-0 z-[100] bg-[rgba(250,248,244,0.92)] backdrop-blur-[16px] border-b border-[var(--border)] px-5 h-16 flex items-center justify-between">
@@ -722,6 +723,12 @@ function TermsVendorsPage() {
 /* ─── App Shell ─── */
 function AppContent() {
   useCart();
+  const { pathname } = useLocation();
+
+  if (pathname === '/login') {
+    return <><ScrollToTop /><AuthPage /></>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />
