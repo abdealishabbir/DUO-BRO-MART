@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DUOBRO MART — Sign In</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Sora', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        ink: '#101A2E',
+                        ink2: '#1B2A47',
+                        marigold: '#F2A93B',
+                        marigold2: '#E0912A',
+                        cream: '#FBF7EF',
+                        slate: '#5B6B85',
+                    },
+                    boxShadow: {
+                        panel: '0 20px 60px -20px rgba(16,26,46,0.35)',
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-display {
+            font-family: 'Sora', sans-serif;
+        }
+
+        .tab-underline {
+            transition: all .2s ease;
+        }
+
+        .dot-grid {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.13) 1px, transparent 1px);
+            background-size: 22px 22px;
+        }
+
+        .strength-bar {
+            transition: background-color .25s ease;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        .stamp {
+            transform: rotate(-8deg);
+        }
+    </style>
+</head>
+
+<body class="bg-cream min-h-screen font-body text-ink">
+
+    <div class="min-h-screen flex items-center justify-center p-4 sm:p-6">
+        <div class="w-full max-w-4xl bg-white rounded-3xl shadow-panel overflow-hidden grid md:grid-cols-2">
+
+            <!-- LEFT BRAND PANEL -->
+            <div
+                class="relative hidden md:flex flex-col justify-between bg-gradient-to-br from-ink to-ink2 text-white p-10 overflow-hidden">
+                <div class="absolute inset-0 dot-grid opacity-40"></div>
+
+                <!-- Stamp badge -->
+                <div
+                    class="stamp absolute top-8 right-8 w-20 h-20 rounded-full border-2 border-marigold/70 flex items-center justify-center text-center">
+                    <span
+                        class="font-display text-[10px] font-bold tracking-widest text-marigold leading-tight">EST.<br />KARACHI</span>
+                </div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-14">
+                        <div class="w-9 h-9 rounded-lg bg-marigold flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="#101A2E" stroke-width="2.4" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                                <path d="M3 6h18" />
+                                <path d="M16 10a4 4 0 0 1-8 0" />
+                            </svg>
+                        </div>
+                        <span class="font-display font-bold text-lg tracking-tight">DUOBRO MART</span>
+                    </div>
+
+                    <h1 class="font-display font-bold text-3xl leading-tight mb-4">
+                        Everything you<br />need, one cart<br />away.
+                    </h1>
+                    <p class="text-white/60 text-sm max-w-xs leading-relaxed">
+                        Sign in to track orders, save your favourites, and check out faster next time.
+                    </p>
+                </div>
+
+                <div class="relative z-10 space-y-4 mt-10">
+                    <div class="flex items-center gap-3 text-sm text-white/80">
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="#F2A93B" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M5 12h14" />
+                                <path d="m12 5 7 7-7 7" />
+                            </svg>
+                        </div>
+                        Fast local delivery across Karachi
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-white/80">
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="#F2A93B" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M5 12h14" />
+                                <path d="m12 5 7 7-7 7" />
+                            </svg>
+                        </div>
+                        Order updates straight to WhatsApp
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-white/80">
+                        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                fill="none" stroke="#F2A93B" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M5 12h14" />
+                                <path d="m12 5 7 7-7 7" />
+                            </svg>
+                        </div>
+                        Secure, encrypted checkout
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT FORM PANEL -->
+            <div class="p-6 sm:p-10">
+
+                <!-- mobile logo -->
+                <div class="flex md:hidden items-center gap-2 mb-6">
+                    <div class="w-8 h-8 rounded-lg bg-marigold flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="#101A2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                            <path d="M3 6h18" />
+                            <path d="M16 10a4 4 0 0 1-8 0" />
+                        </svg>
+                    </div>
+                    <span class="font-display font-bold text-ink">DUOBRO MART</span>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex gap-1 bg-neutral-100 rounded-xl p-1 mb-8">
+                    <button data-tab-btn="signin"
+                        class="tab-btn flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        Sign In
+                    </button>
+                    <button data-tab-btn="signup"
+                        class="tab-btn flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M19 8v6" />
+                            <path d="M22 11h-6" />
+                        </svg>
+                        Sign Up
+                    </button>
+                    <button data-tab-btn="admin"
+                        class="tab-btn flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                        </svg>
+                        Admin
+                    </button>
+                </div>
+
+                <!-- SIGN IN PANEL -->
+                <form id="panel-signin" class="tab-panel space-y-4">
+                    <div class="mb-5">
+                        <h2 class="font-display font-bold text-xl text-ink">Welcome back</h2>
+                        <p class="text-sm text-slate mt-1">Sign in to your DUOBRO MART account</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5">Email address</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate/70">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                                    <path d="m22 6-10 7L2 6" />
+                                </svg>
+                            </span>
+                            <input type="email" placeholder="you@example.com"
+                                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-sm font-semibold text-ink">Password</label>
+                            <a href="#" class="text-xs font-semibold text-marigold2 hover:text-marigold">Forgot
+                                password?</a>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate/70">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                            </span>
+                            <input id="signin-password" type="password" placeholder="Enter your password"
+                                class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                            <button type="button" onclick="toggleVisibility('signin-password', this)"
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate/60 hover:text-ink">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <label class="flex items-center gap-2 text-sm text-slate cursor-pointer select-none">
+                        <input type="checkbox" checked class="w-4 h-4 rounded accent-marigold" />
+                        Keep me logged in for 30 days
+                    </label>
+
+                    <button type="submit"
+                        class="w-full py-2.5 rounded-xl bg-ink hover:bg-ink2 text-white text-sm font-semibold transition-colors font-display">
+                        Sign in to DUOBRO MART
+                    </button>
+
+                    <div class="flex items-center gap-3 py-1">
+                        <div class="h-px bg-neutral-200 flex-1"></div>
+                        <span class="text-xs text-slate">or continue with</span>
+                        <div class="h-px bg-neutral-200 flex-1"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button"
+                            class="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-neutral-200 text-sm font-semibold text-ink hover:bg-neutral-50 transition-colors">
+                            <svg width="16" height="16" viewBox="0 0 24 24">
+                                <path fill="#4285F4"
+                                    d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.2 2.7-2.5 3.6v3h4C22.2 19 23.5 15.9 23.5 12.3Z" />
+                                <path fill="#34A853"
+                                    d="M12 24c3.2 0 6-1.1 8-2.9l-4-3c-1.1.8-2.5 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9h-4.1v3.1C3.4 21.3 7.4 24 12 24Z" />
+                                <path fill="#FBBC05"
+                                    d="M5.4 14.4c-.2-.7-.4-1.4-.4-2.4s.1-1.7.4-2.4V6.5H1.3C.5 8.1 0 10 0 12s.5 3.9 1.3 5.5l4.1-3.1Z" />
+                                <path fill="#EA4335"
+                                    d="M12 4.8c1.7 0 3.3.6 4.5 1.8l3.4-3.4C17.9 1.2 15.1 0 12 0 7.4 0 3.4 2.7 1.3 6.5l4.1 3.1c.9-2.8 3.5-4.8 6.6-4.8Z" />
+                            </svg>
+                            Google
+                        </button>
+                        <button type="button"
+                            class="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-neutral-200 text-sm font-semibold text-ink hover:bg-neutral-50 transition-colors">
+                            <svg width="16" height="16" viewBox="0 0 24 24">
+                                <path fill="#1877F2"
+                                    d="M24 12.07C24 5.4 18.6 0 12 0S0 5.4 0 12.07C0 18.1 4.4 23.1 10.1 24v-8.44H7.1v-3.5h3v-2.7c0-3 1.8-4.6 4.5-4.6 1.3 0 2.6.2 2.6.2v2.9h-1.5c-1.5 0-1.9.9-1.9 1.9v2.3h3.3l-.5 3.5h-2.8V24C19.6 23.1 24 18.1 24 12.07Z" />
+                            </svg>
+                            Facebook
+                        </button>
+                    </div>
+
+                    <p class="text-center text-sm text-slate pt-1">
+                        Don't have an account?
+                        <button type="button" onclick="switchTab('signup')"
+                            class="text-marigold2 font-semibold hover:text-marigold">Create one free</button>
+                    </p>
+                </form>
+
+                <!-- SIGN UP PANEL -->
+                <form id="panel-signup" class="tab-panel hidden space-y-4">
+                    <div class="mb-5">
+                        <h2 class="font-display font-bold text-xl text-ink">Join DUOBRO MART</h2>
+                        <p class="text-sm text-slate mt-1">Create your free shopping account</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-ink mb-1.5">First name</label>
+                            <input type="text" placeholder="Ahmed"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-ink mb-1.5">Last name</label>
+                            <input type="text" placeholder="Khan"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5">Email address</label>
+                        <input type="email" placeholder="ahmed@example.com"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5">Phone number</label>
+                        <div class="flex gap-2">
+                            <div
+                                class="flex items-center gap-1.5 px-3 rounded-xl border border-neutral-200 bg-neutral-50 text-sm font-medium text-ink shrink-0">
+                                🇵🇰 +92
+                            </div>
+                            <input type="tel" placeholder="300 1234567"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5">Password</label>
+                        <div class="relative">
+                            <input id="signup-password" oninput="updateStrength(this.value)" type="password"
+                                placeholder="Min. 8 characters"
+                                class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                            <button type="button" onclick="toggleVisibility('signup-password', this)"
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate/60 hover:text-ink">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="strength-wrap" class="hidden items-center gap-2 mt-2">
+                            <div class="flex gap-1 flex-1">
+                                <div id="bar-1" class="strength-bar h-1.5 flex-1 rounded-full bg-neutral-200"></div>
+                                <div id="bar-2" class="strength-bar h-1.5 flex-1 rounded-full bg-neutral-200"></div>
+                                <div id="bar-3" class="strength-bar h-1.5 flex-1 rounded-full bg-neutral-200"></div>
+                                <div id="bar-4" class="strength-bar h-1.5 flex-1 rounded-full bg-neutral-200"></div>
+                            </div>
+                            <span id="strength-label" class="text-xs font-semibold text-slate w-12 text-right"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5">Confirm password</label>
+                        <div class="relative">
+                            <input id="signup-confirm" type="password" placeholder="Re-enter password"
+                                class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                            <button type="button" onclick="toggleVisibility('signup-confirm', this)"
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate/60 hover:text-ink">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <label class="flex items-start gap-2 text-sm text-slate cursor-pointer select-none">
+                        <input type="checkbox" class="w-4 h-4 mt-0.5 rounded accent-marigold" />
+                        <span>I agree to DUOBRO MART's <a href="#" class="text-marigold2 font-semibold">Terms of
+                                Service</a> and <a href="#" class="text-marigold2 font-semibold">Privacy
+                                Policy</a></span>
+                    </label>
+
+                    <button type="submit"
+                        class="w-full py-2.5 rounded-xl bg-ink hover:bg-ink2 text-white text-sm font-semibold transition-colors font-display">
+                        Create my account
+                    </button>
+
+                    <p class="text-center text-sm text-slate">
+                        Already have an account?
+                        <button type="button" onclick="switchTab('signin')"
+                            class="text-marigold2 font-semibold hover:text-marigold">Sign in</button>
+                    </p>
+                </form>
+
+                <!-- ADMIN PANEL -->
+                <form id="panel-admin" class="tab-panel hidden space-y-4">
+                    <div class="mb-5">
+                        <h2 class="font-display font-bold text-xl text-ink">Admin portal</h2>
+                        <p class="text-sm text-slate mt-1">Secure access for DUOBRO MART staff only</p>
+                    </div>
+
+                    <div class="flex gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
+                        <svg class="shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path
+                                d="m21.7 18.4-9-15.5a2 2 0 0 0-3.4 0l-9 15.5A2 2 0 0 0 2 21.5h20a2 2 0 0 0 1.7-3.1Z" />
+                            <path d="M12 9v4" />
+                            <path d="M12 17h.01" />
+                        </svg>
+                        <div>
+                            <p class="text-sm font-semibold text-amber-800">Restricted area</p>
+                            <p class="text-xs text-amber-700 mt-0.5 leading-relaxed">Admin access is strictly for
+                                authorised DUOBRO MART staff. Unauthorised access attempts are logged and reported.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5">Admin email</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                                </svg>
+                            </span>
+                            <input type="email" placeholder="admin@duobromart.pk"
+                                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-amber-200 text-sm focus:ring-2 focus:ring-amber-300/50 focus:border-amber-400 transition-colors" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-ink mb-1.5">Password</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate/70">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                            </span>
+                            <input id="admin-password" type="password" placeholder="Admin password"
+                                class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-neutral-200 text-sm focus:ring-2 focus:ring-marigold/40 focus:border-marigold transition-colors" />
+                            <button type="button" onclick="toggleVisibility('admin-password', this)"
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate/60 hover:text-ink">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full py-2.5 rounded-xl bg-ink hover:bg-ink2 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors font-display">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                        </svg>
+                        Continue to 2-factor verification
+                    </button>
+                </form>
+
+                <!-- Trust badges -->
+                <div class="flex items-center justify-center gap-5 mt-8 text-xs text-slate/70">
+                    <span class="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        SSL Secured
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                        </svg>
+                        Data Protected
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                        Verified Platform
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tabs = ['signin', 'signup', 'admin'];
+
+        function switchTab(name) {
+            tabs.forEach(t => {
+                document.getElementById('panel-' + t).classList.toggle('hidden', t !== name);
+                const btn = document.querySelector(`[data-tab-btn="${t}"]`);
+                if (t === name) {
+                    btn.classList.add('bg-white', 'shadow-sm', 'text-ink');
+                    btn.classList.remove('text-slate');
+                } else {
+                    btn.classList.remove('bg-white', 'shadow-sm', 'text-ink');
+                    btn.classList.add('text-slate');
+                }
+            });
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.dataset.tabBtn));
+        });
+
+        switchTab('signin');
+
+        function toggleVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function updateStrength(value) {
+            const wrap = document.getElementById('strength-wrap');
+            const label = document.getElementById('strength-label');
+            if (!value) { wrap.classList.add('hidden'); wrap.classList.remove('flex'); return; }
+            wrap.classList.remove('hidden'); wrap.classList.add('flex');
+
+            let score = 0;
+            if (value.length >= 8) score++;
+            if (/[A-Z]/.test(value)) score++;
+            if (/[0-9]/.test(value)) score++;
+            if (/[^A-Za-z0-9]/.test(value)) score++;
+
+            const colors = ['bg-neutral-200', 'bg-red-400', 'bg-yellow-400', 'bg-green-400', 'bg-green-600'];
+            const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+
+            for (let i = 1; i <= 4; i++) {
+                const bar = document.getElementById('bar-' + i);
+                bar.className = 'strength-bar h-1.5 flex-1 rounded-full ' + (i <= score ? colors[score] : 'bg-neutral-200');
+            }
+            label.textContent = labels[score];
+        }
+
+        // Prevent actual form submission in this static demo
+        document.querySelectorAll('form').forEach(f => f.addEventListener('submit', e => e.preventDefault()));
+    </script>
+
+</body>
+
+</html>
