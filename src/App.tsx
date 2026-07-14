@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import AuthPage from './Pages/login';
 import AdminPanel from './Pages/admin';
+import AdminLoginPage from './Pages/adminlogin';
 import {
   ShoppingBag, Menu, X, Minus, Plus, Trash2, ArrowLeft, MessageCircle,
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
@@ -759,7 +760,12 @@ function AppContent() {
 
   if (pathname === '/' || pathname === '/login') {
     if (user) return <Navigate to="/home" replace />;
-    return <><ScrollToTop /><AuthPage onSignUp={handleSignUp} onSignIn={handleSignIn} onAdminLogin={handleAdminLogin} /></>;
+    return <><ScrollToTop /><AuthPage onSignUp={handleSignUp} onSignIn={handleSignIn} /></>;
+  }
+
+  if (pathname === '/admin-login') {
+    if (user?.role === 'admin') return <Navigate to="/admin" replace />;
+    return <><ScrollToTop /><AdminLoginPage onAuthenticated={handleAdminLogin} /></>;
   }
 
   if (pathname === '/admin') {

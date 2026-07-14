@@ -9,7 +9,6 @@ import {
   EyeOff,
   Shield,
   ShoppingBag,
-  AlertTriangle,
   Phone,
   ArrowRight,
   CheckCircle2,
@@ -72,24 +71,16 @@ interface SignUpData {
   agree: boolean;
 }
 
-interface AdminLoginData {
-  email: string;
-  password: string;
-}
-
 interface AuthPageProps {
   onSignIn?: (data: SignInData) => void;
   onSignUp?: (data: SignUpData) => void;
-  onAdminLogin?: (data: AdminLoginData) => void;
 }
 
 export default function AuthPage({
   onSignIn = (data) => console.log("sign in", data),
   onSignUp = (data) => console.log("sign up", data),
-  onAdminLogin = (data) => console.log("admin login", data),
 }: AuthPageProps): JSX.Element {
-  const [tab, setTab] = useState<"signin" | "signup" | "admin">("signup");
-  const [adminCredentials, setAdminCredentials] = useState<AdminLoginData | null>(null);
+  const [tab, setTab] = useState<"signin" | "signup">("signup");
 
   return (
     <div className="relative min-h-screen bg-[#FBF7EF] flex items-center justify-center p-4 sm:p-6">
@@ -124,12 +115,6 @@ export default function AuthPage({
               icon={<User size={14} />}
               label="Sign In"
             />
-            <PillTab
-              active={tab === "admin"}
-              onClick={() => setTab("admin")}
-              icon={<Shield size={14} />}
-              label="Admin"
-            />
           </div>
 
           {tab === "signin" && (
@@ -138,14 +123,6 @@ export default function AuthPage({
           {tab === "signup" && (
             <SignUpForm onSubmit={onSignUp} onSignIn={() => setTab("signin")} />
           )}
-          {tab === "admin" && (adminCredentials ? (
-            <AdminPasskeyForm
-              email={adminCredentials.email}
-              onBack={() => setAdminCredentials(null)}
-              onSubmit={() => onAdminLogin(adminCredentials)}
-            />
-          ) : <AdminForm onSubmit={setAdminCredentials} />)}
-
           <div className="flex items-center justify-center gap-5 mt-8 text-xs text-[#5B6B85]/70">
             <span className="flex items-center gap-1">
               <Lock size={12} /> SSL Secured
@@ -157,6 +134,7 @@ export default function AuthPage({
               <CheckCircle2 size={12} /> Verified Platform
             </span>
           </div>
+          <p className="mt-5 text-center text-xs text-[#5B6B85]">Are you a staff member? <Link to="/admin-login" className="font-bold text-[#E0912A] hover:text-[#F2A93B]">Admin login</Link></p>
         </div>
       </div>
     </div>
@@ -650,130 +628,3 @@ function SignUpForm({ onSubmit, onSignIn }: SignUpFormProps): JSX.Element {
   );
 }
 
-/* --------------------------------- Admin --------------------------------- */
-
-interface AdminPasskeyFormProps {
-  email: string;
-  onBack: () => void;
-  onSubmit: () => void;
-}
-
-function AdminPasskeyForm({ email, onBack, onSubmit }: AdminPasskeyFormProps): JSX.Element {
-  const [passkey, setPasskey] = useState("");
-  const [showPasskey, setShowPasskey] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-
-  const verify = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!passkey.trim()) return;
-    setVerifying(true);
-    window.setTimeout(onSubmit, 450);
-  };
-
-  return (
-    <form onSubmit={verify} className="space-y-4">
-      <div className="mb-5">
-        <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center mb-3"><Shield size={20} /></div>
-        <h2 className="font-bold text-xl text-[#101A2E]">Two-step verification</h2>
-        <p className="text-sm text-[#5B6B85] mt-1">Enter the passkey for <strong>{email}</strong> to continue.</p>
-      </div>
-
-      <div className="flex gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
-        <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-800 leading-relaxed">Passkey validation is currently a demo. It will be checked securely against the admin database when the backend is connected.</p>
-      </div>
-
-      <Field label="Admin passkey">
-        <TextInput
-          icon={<Lock size={16} />}
-          type={showPasskey ? "text" : "password"}
-          placeholder="Enter your passkey"
-          value={passkey}
-          onChange={(e) => setPasskey(e.target.value)}
-          required
-          right={<PasswordToggle visible={showPasskey} onClick={() => setShowPasskey((value) => !value)} />}
-        />
-      </Field>
-
-      <button type="submit" disabled={verifying} className="w-full py-2.5 rounded-xl bg-[#101A2E] hover:bg-[#1B2A47] text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-60">
-        <Shield size={15} /> {verifying ? "Verifying passkey..." : "Verify and continue"}
-      </button>
-      <button type="button" onClick={onBack} disabled={verifying} className="w-full text-sm font-semibold text-[#E0912A] hover:text-[#F2A93B] disabled:opacity-60">Back to admin login</button>
-    </form>
-  );
-}
-
-interface AdminFormProps {
-  onSubmit: (data: AdminLoginData) => void;
-}
-
-function AdminForm({ onSubmit }: AdminFormProps): JSX.Element {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit({ email, password });
-      }}
-      className="space-y-4"
-    >
-      <div className="mb-5">
-        <h2 className="font-bold text-xl text-[#101A2E]">Admin portal</h2>
-        <p className="text-sm text-[#5B6B85] mt-1">
-          Secure access for {BRAND} staff only
-        </p>
-      </div>
-
-      <div className="flex gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
-        <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm font-semibold text-amber-800">Restricted area</p>
-          <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
-            Admin access is strictly for authorised {BRAND} staff. Unauthorised
-            access attempts are logged and reported.
-          </p>
-        </div>
-      </div>
-
-      <Field label="Admin email">
-        <TextInput
-          icon={<Shield size={16} className="text-amber-500" />}
-          type="email"
-          placeholder="admin@duobromart.pk"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border-amber-200 focus:ring-amber-300/50 focus:border-amber-400"
-          required
-        />
-      </Field>
-
-      <Field label="Password">
-        <TextInput
-          icon={<Lock size={16} />}
-          type={showPassword ? "text" : "password"}
-          placeholder="Admin password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          right={
-            <PasswordToggle
-              visible={showPassword}
-              onClick={() => setShowPassword((s) => !s)}
-            />
-          }
-        />
-      </Field>
-
-      <button
-        type="submit"
-        className="w-full py-2.5 rounded-xl bg-[#101A2E] hover:bg-[#1B2A47] text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
-      >
-        <Shield size={15} />
-        Continue to 2-factor verification
-      </button>
-    </form>
-  );
-}
