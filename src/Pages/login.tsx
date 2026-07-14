@@ -1,4 +1,5 @@
 import { useState, ReactNode } from "react";
+import { Link } from "react-router-dom";
 import {
   User,
   UserPlus,
@@ -87,10 +88,17 @@ export default function AuthPage({
   onSignUp = (data) => console.log("sign up", data),
   onAdminLogin = (data) => console.log("admin login", data),
 }: AuthPageProps): JSX.Element {
-  const [tab, setTab] = useState<"signin" | "signup" | "admin">("signin");
+  const [tab, setTab] = useState<"signin" | "signup" | "admin">("signup");
+  const [adminCredentials, setAdminCredentials] = useState<AdminLoginData | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#FBF7EF] flex items-center justify-center p-4 sm:p-6">
+    <div className="relative min-h-screen bg-[#FBF7EF] flex items-center justify-center p-4 sm:p-6">
+      <Link
+        to="/shop"
+        className="absolute top-5 right-5 z-10 rounded-xl border border-[#101A2E]/15 bg-white px-4 py-2 text-sm font-semibold text-[#101A2E] shadow-sm transition-colors hover:bg-neutral-50 sm:top-6 sm:right-6"
+      >
+        Continue shopping
+      </Link>
       <div className="w-full max-w-4xl bg-white rounded-3xl shadow-[0_20px_60px_-20px_rgba(16,26,46,0.35)] overflow-hidden grid md:grid-cols-2">
         <BrandPanel />
 
@@ -105,16 +113,16 @@ export default function AuthPage({
           {/* Tabs */}
           <div className="flex gap-1 bg-neutral-100 rounded-xl p-1 mb-8">
             <PillTab
-              active={tab === "signin"}
-              onClick={() => setTab("signin")}
-              icon={<User size={14} />}
-              label="Sign In"
-            />
-            <PillTab
               active={tab === "signup"}
               onClick={() => setTab("signup")}
               icon={<UserPlus size={14} />}
               label="Sign Up"
+            />
+            <PillTab
+              active={tab === "signin"}
+              onClick={() => setTab("signin")}
+              icon={<User size={14} />}
+              label="Sign In"
             />
             <PillTab
               active={tab === "admin"}
@@ -130,7 +138,13 @@ export default function AuthPage({
           {tab === "signup" && (
             <SignUpForm onSubmit={onSignUp} onSignIn={() => setTab("signin")} />
           )}
-          {tab === "admin" && <AdminForm onSubmit={onAdminLogin} />}
+          {tab === "admin" && (adminCredentials ? (
+            <AdminPasskeyForm
+              email={adminCredentials.email}
+              onBack={() => setAdminCredentials(null)}
+              onSubmit={() => onAdminLogin(adminCredentials)}
+            />
+          ) : <AdminForm onSubmit={setAdminCredentials} />)}
 
           <div className="flex items-center justify-center gap-5 mt-8 text-xs text-[#5B6B85]/70">
             <span className="flex items-center gap-1">
@@ -637,6 +651,57 @@ function SignUpForm({ onSubmit, onSignIn }: SignUpFormProps): JSX.Element {
 }
 
 /* --------------------------------- Admin --------------------------------- */
+
+interface AdminPasskeyFormProps {
+  email: string;
+  onBack: () => void;
+  onSubmit: () => void;
+}
+
+function AdminPasskeyForm({ email, onBack, onSubmit }: AdminPasskeyFormProps): JSX.Element {
+  const [passkey, setPasskey] = useState("");
+  const [showPasskey, setShowPasskey] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+
+  const verify = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!passkey.trim()) return;
+    setVerifying(true);
+    window.setTimeout(onSubmit, 450);
+  };
+
+  return (
+    <form onSubmit={verify} className="space-y-4">
+      <div className="mb-5">
+        <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center mb-3"><Shield size={20} /></div>
+        <h2 className="font-bold text-xl text-[#101A2E]">Two-step verification</h2>
+        <p className="text-sm text-[#5B6B85] mt-1">Enter the passkey for <strong>{email}</strong> to continue.</p>
+      </div>
+
+      <div className="flex gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
+        <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+        <p className="text-xs text-amber-800 leading-relaxed">Passkey validation is currently a demo. It will be checked securely against the admin database when the backend is connected.</p>
+      </div>
+
+      <Field label="Admin passkey">
+        <TextInput
+          icon={<Lock size={16} />}
+          type={showPasskey ? "text" : "password"}
+          placeholder="Enter your passkey"
+          value={passkey}
+          onChange={(e) => setPasskey(e.target.value)}
+          required
+          right={<PasswordToggle visible={showPasskey} onClick={() => setShowPasskey((value) => !value)} />}
+        />
+      </Field>
+
+      <button type="submit" disabled={verifying} className="w-full py-2.5 rounded-xl bg-[#101A2E] hover:bg-[#1B2A47] text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-60">
+        <Shield size={15} /> {verifying ? "Verifying passkey..." : "Verify and continue"}
+      </button>
+      <button type="button" onClick={onBack} disabled={verifying} className="w-full text-sm font-semibold text-[#E0912A] hover:text-[#F2A93B] disabled:opacity-60">Back to admin login</button>
+    </form>
+  );
+}
 
 interface AdminFormProps {
   onSubmit: (data: AdminLoginData) => void;

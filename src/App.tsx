@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import AuthPage from './Pages/login';
+import AdminPanel from './Pages/admin';
 import {
   ShoppingBag, Menu, X, Minus, Plus, Trash2, ArrowLeft, MessageCircle,
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
-  CheckCircle, AlertCircle, AlertTriangle, Star,
+  CheckCircle, AlertCircle, AlertTriangle, Star, UserCircle, LogOut,
 } from 'lucide-react';
 /* ─── Scroll To Top on Route Change ─── */
 function ScrollToTop() { const { pathname } = useLocation(); useEffect(() => { window.scrollTo(0, 0); }, [pathname]); return null; }
@@ -36,21 +37,22 @@ function CartProvider({ children }: { children: ReactNode }) {
 /* ─── Header ─── */
 function Header() {
   const { cartCount, setCartOpen } = useCart();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const loc = useLocation();
   const links = [
-    { to: '/', label: 'Home' }, { to: '/shop', label: 'Shop' },
+    { to: '/home', label: 'Home' }, { to: '/shop', label: 'Shop' },
     { to: '/terms-buyers', label: 'Terms & Conditions' }, { to: '/vendor-register', label: 'Become a Vendor' },
-    { to: '/login', label: 'Login' },
   ];
   return (
     <header className="fixed top-0 left-0 right-0 z-[100] bg-[rgba(250,248,244,0.92)] backdrop-blur-[16px] border-b border-[var(--border)] px-5 h-16 flex items-center justify-between">
-      <Link to="/" className="flex flex-col leading-none">
+      <Link to="/home" className="flex flex-col leading-none">
         <span className="font-['Playfair_Display'] text-xl font-bold tracking-[2px] text-[var(--charcoal)]">DUOBRO MART</span>
         <span className="text-[9px] font-medium tracking-[1.5px] text-[var(--muted)] uppercase mt-0.5">Shop Easy. Live Better</span>
       </Link>
       <nav className="hidden md:flex gap-7 items-center">
         {links.map((l) => <Link key={l.to} to={l.to} className={`text-sm font-medium transition-colors duration-200 ${loc.pathname === l.to ? 'text-[var(--accent)]' : 'text-[var(--charcoal)] hover:text-[var(--accent)]'}`}>{l.label}</Link>)}
+        {user ? <Link to="/profile" className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${loc.pathname === '/profile' ? 'text-[var(--accent)]' : 'text-[var(--charcoal)] hover:text-[var(--accent)]'}`}><UserCircle size={19} /> Profile</Link> : <Link to="/login" className={`text-sm font-medium transition-colors duration-200 ${loc.pathname === '/login' ? 'text-[var(--accent)]' : 'text-[var(--charcoal)] hover:text-[var(--accent)]'}`}>Login</Link>}
       </nav>
       <div className="flex items-center gap-3">
         <button onClick={() => setCartOpen(true)} className="bg-[var(--charcoal)] text-white border-none rounded-full px-4 py-2 text-[13px] font-semibold flex items-center gap-2 transition-colors duration-200 hover:bg-[var(--warm-brown)]">
@@ -61,7 +63,7 @@ function Header() {
       </div>
       {open && (
         <div className="absolute top-16 left-0 right-0 bg-white border-b border-[var(--border)] shadow-lg md:hidden">
-          <nav className="flex flex-col p-4 gap-4">{links.map((l) => <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className={`text-sm font-medium py-2 px-4 rounded-lg transition-colors ${loc.pathname === l.to ? 'bg-[var(--cream)] text-[var(--accent)]' : 'text-[var(--charcoal)] hover:bg-[var(--cream)]'}`}>{l.label}</Link>)}</nav>
+          <nav className="flex flex-col p-4 gap-4">{links.map((l) => <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className={`text-sm font-medium py-2 px-4 rounded-lg transition-colors ${loc.pathname === l.to ? 'bg-[var(--cream)] text-[var(--accent)]' : 'text-[var(--charcoal)] hover:bg-[var(--cream)]'}`}>{l.label}</Link>)}{user ? <Link to="/profile" onClick={() => setOpen(false)} className="text-sm font-medium py-2 px-4 rounded-lg text-[var(--charcoal)] hover:bg-[var(--cream)]"><UserCircle size={16} className="inline mr-2" />Profile</Link> : <Link to="/login" onClick={() => setOpen(false)} className="text-sm font-medium py-2 px-4 rounded-lg text-[var(--charcoal)] hover:bg-[var(--cream)]">Login</Link>}</nav>
         </div>
       )}
     </header>
@@ -721,12 +723,47 @@ function TermsVendorsPage() {
 }
 
 /* ─── App Shell ─── */
+function ProfilePage() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  if (!user) return <Navigate to="/login" replace />;
+  const initials = user.name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+  const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
+  return (
+    <div className="min-h-screen bg-[var(--cream)] pt-24 pb-16 px-5">
+      <section className="max-w-3xl mx-auto">
+        <div className="mb-8"><p className="text-xs font-bold tracking-[2px] uppercase text-[var(--accent)]">My account</p><h1 className="font-['Playfair_Display'] text-4xl font-bold mt-2">Your Profile</h1><p className="text-[var(--muted)] mt-2">Manage your DUOBRO MART account details.</p></div>
+        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-sm">
+          <div className="bg-[var(--charcoal)] px-6 py-7 sm:px-9 flex items-center gap-4"><div className="w-16 h-16 shrink-0 rounded-full bg-[var(--accent)] text-white text-xl font-bold flex items-center justify-center">{initials}</div><div><h2 className="font-['Playfair_Display'] text-2xl font-bold text-white">{user.name}</h2><p className="text-sm text-white/65 capitalize mt-1">{user.role} account</p></div></div>
+          <div className="p-6 sm:p-9"><h3 className="text-sm font-bold uppercase tracking-wider text-[var(--muted)] mb-5">Personal information</h3><dl className="divide-y divide-[var(--border)]"><div className="py-4 grid gap-1 sm:grid-cols-[150px_1fr]"><dt className="text-sm font-semibold text-[var(--muted)]">Full name</dt><dd className="text-[var(--charcoal)]">{user.name}</dd></div><div className="py-4 grid gap-1 sm:grid-cols-[150px_1fr]"><dt className="text-sm font-semibold text-[var(--muted)]">Email address</dt><dd className="text-[var(--charcoal)] break-all">{user.email}</dd></div><div className="py-4 grid gap-1 sm:grid-cols-[150px_1fr]"><dt className="text-sm font-semibold text-[var(--muted)]">Phone number</dt><dd className="text-[var(--charcoal)]">{user.phone}</dd></div></dl><div className="mt-8 pt-6 border-t border-[var(--border)]"><button onClick={handleLogout} className="inline-flex items-center gap-2 rounded-full bg-[var(--charcoal)] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--warm-brown)]"><LogOut size={17} /> Logout</button></div></div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function AppContent() {
   useCart();
+  const { user, signIn } = useAuth();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const startSession = (profile: UserProfile) => { signIn(profile); navigate('/home', { replace: true }); };
+  const handleSignUp = (data: { firstName: string; lastName: string; email: string; phone: string }) => startSession({ name: `${data.firstName} ${data.lastName}`.trim(), email: data.email, phone: data.phone, role: 'customer' });
+  const handleSignIn = (data: { email: string }) => {
+    let stored: UserProfile | null = null;
+    try { stored = JSON.parse(localStorage.getItem('duobro_user') || 'null'); } catch { /* use entered details */ }
+    if (stored && stored.email.toLowerCase() === data.email.toLowerCase()) startSession(stored);
+    else startSession({ name: data.email.split('@')[0] || 'Customer', email: data.email, phone: 'Not provided', role: 'customer' });
+  };
+  const handleAdminLogin = (data: { email: string }) => { signIn({ name: 'Administrator', email: data.email, phone: 'Not provided', role: 'admin' }); navigate('/admin', { replace: true }); };
 
-  if (pathname === '/login') {
-    return <><ScrollToTop /><AuthPage /></>;
+  if (pathname === '/' || pathname === '/login') {
+    if (user) return <Navigate to="/home" replace />;
+    return <><ScrollToTop /><AuthPage onSignUp={handleSignUp} onSignIn={handleSignIn} onAdminLogin={handleAdminLogin} /></>;
+  }
+
+  if (pathname === '/admin') {
+    return user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/login" replace />;
   }
 
   return (
@@ -735,12 +772,13 @@ function AppContent() {
       <Header />
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/terms-buyers" element={<TermsBuyersPage />} />
           <Route path="/vendor-register" element={<VendorRegisterPage />} />
           <Route path="/terms-vendors" element={<TermsVendorsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </main>
       <Footer />
@@ -750,5 +788,17 @@ function AppContent() {
 }
 
 export default function App() {
-  return <BrowserRouter><CartProvider><AppContent /></CartProvider></BrowserRouter>;
+  return <BrowserRouter><AuthProvider><CartProvider><AppContent /></CartProvider></AuthProvider></BrowserRouter>;
+}
+
+interface UserProfile { name: string; email: string; phone: string; role: 'customer' | 'admin' }
+interface AuthCtx { user: UserProfile | null; signIn: (profile: UserProfile) => void; logout: () => void }
+const AuthContext = createContext<AuthCtx | null>(null);
+function useAuth() { const a = useContext(AuthContext); if (!a) throw new Error('no auth'); return a; }
+
+function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<UserProfile | null>(() => { try { return JSON.parse(localStorage.getItem('duobro_user') || 'null'); } catch { return null; } });
+  const signIn = (profile: UserProfile) => { setUser(profile); localStorage.setItem('duobro_user', JSON.stringify(profile)); };
+  const logout = () => { setUser(null); localStorage.removeItem('duobro_user'); };
+  return <AuthContext.Provider value={{ user, signIn, logout }}>{children}</AuthContext.Provider>;
 }
