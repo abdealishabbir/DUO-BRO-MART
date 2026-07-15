@@ -36,4 +36,5 @@ Implement verification and recovery emails, then move browser-held JWTs to secur
 - [x] Live public catalog connected to the shop page with static fallback
 - [x] Vendor product-submission form connected to the catalog API
 - [x] Connect live catalog data to home featured products, product detail, and admin approval queue
-- [ ] Complete shop filters (price, brand, rating), deals, pagination, and home carousel sections
+- [x] Shop price/brand/rating filters and pagination controls
+- [x] Live Flash Deals auto-rotation and New Arrivals storefront sections
