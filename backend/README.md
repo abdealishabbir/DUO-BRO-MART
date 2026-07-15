@@ -17,5 +17,11 @@ The React app calls `http://localhost:8000/api` by default. Set `VITE_API_URL` i
 - `POST /api/auth/login/` — customer/vendor/admin login; requires `portal`
 - `GET /api/auth/me/` — current authenticated user
 - `POST /api/auth/change-password/` — authenticated password change
+- `POST /api/auth/password-reset/` and `/confirm/` — password recovery
+- `POST /api/auth/verify-email/:uid/:token/` — email verification
+- `POST /api/auth/admin/vendor-credentials/` — staff issues an approved vendor's temporary password
+- `GET /api/auth/social/{google|facebook}/` — OAuth sign-in start and callback
 
 Vendor accounts can only log in when an admin sets `vendor_approved=True`. Create staff/admin users using `createsuperuser`; the custom user model assigns them the `admin` role.
+
+Email is printed in the Docker backend console during local development. Configure the SMTP values in `.env` for live email delivery. Google/Facebook OAuth and CAPTCHA configuration keys are listed in `.env.example`; provider accounts are required before those services can be enabled.

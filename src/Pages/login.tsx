@@ -74,11 +74,13 @@ interface SignUpData {
 interface AuthPageProps {
   onSignIn?: (data: SignInData) => void;
   onSignUp?: (data: SignUpData) => void;
+  onSocialLogin?: (provider: 'google' | 'facebook') => void;
 }
 
 export default function AuthPage({
   onSignIn = (data) => console.log("sign in", data),
   onSignUp = (data) => console.log("sign up", data),
+  onSocialLogin = (provider) => console.log("social login", provider),
 }: AuthPageProps): JSX.Element {
   const [tab, setTab] = useState<"signin" | "signup">("signup");
 
@@ -118,7 +120,7 @@ export default function AuthPage({
           </div>
 
           {tab === "signin" && (
-            <SignInForm onSubmit={onSignIn} onCreateAccount={() => setTab("signup")} />
+            <SignInForm onSubmit={onSignIn} onCreateAccount={() => setTab("signup")} onSocialLogin={onSocialLogin} />
           )}
           {tab === "signup" && (
             <SignUpForm onSubmit={onSignUp} onSignIn={() => setTab("signin")} />
@@ -304,9 +306,10 @@ function PasswordToggle({ visible, onClick }: PasswordToggleProps): JSX.Element 
 interface SignInFormProps {
   onSubmit: (data: SignInData) => void;
   onCreateAccount: () => void;
+  onSocialLogin: (provider: 'google' | 'facebook') => void;
 }
 
-function SignInForm({ onSubmit, onCreateAccount }: SignInFormProps): JSX.Element {
+function SignInForm({ onSubmit, onCreateAccount, onSocialLogin }: SignInFormProps): JSX.Element {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -341,9 +344,9 @@ function SignInForm({ onSubmit, onCreateAccount }: SignInFormProps): JSX.Element
       <Field
         label="Password"
         action={
-          <a href="#forgot" className="text-xs font-semibold text-[#E0912A] hover:text-[#F2A93B]">
+          <Link to="/forgot-password" className="text-xs font-semibold text-[#E0912A] hover:text-[#F2A93B]">
             Forgot password?
-          </a>
+          </Link>
         }
       >
         <TextInput
@@ -386,8 +389,8 @@ function SignInForm({ onSubmit, onCreateAccount }: SignInFormProps): JSX.Element
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <SocialButton label="Google" />
-        <SocialButton label="Facebook" />
+        <SocialButton label="Google" onClick={() => onSocialLogin('google')} />
+        <SocialButton label="Facebook" onClick={() => onSocialLogin('facebook')} />
       </div>
 
       <p className="text-center text-sm text-[#5B6B85] pt-1">
@@ -404,10 +407,11 @@ function SignInForm({ onSubmit, onCreateAccount }: SignInFormProps): JSX.Element
   );
 }
 
-function SocialButton({ label }: { label: string }): JSX.Element {
+function SocialButton({ label, onClick }: { label: string; onClick: () => void }): JSX.Element {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-neutral-200 text-sm font-semibold text-[#101A2E] hover:bg-neutral-50 transition-colors"
     >
       {label === "Google" ? (

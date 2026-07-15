@@ -5,7 +5,10 @@ import AdminPanel from './Pages/admin';
 import AdminLoginPage from './Pages/adminlogin';
 import VendorLoginPage from './Pages/vendorlogin';
 import VendorPanel from './Pages/vendor';
-import { login, registerCustomer } from './api/auth';
+import { login, registerCustomer, startSocialLogin } from './api/auth';
+import AccountActionPage from './Pages/accountaction';
+import VendorPasswordPage from './Pages/vendorpassword';
+import SocialCallbackPage from './Pages/socialcallback';
 import {
   ShoppingBag, Menu, X, Minus, Plus, Trash2, ArrowLeft, MessageCircle,
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
@@ -751,21 +754,21 @@ function AppContent() {
   const { user, signIn, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const startSession = (profile: UserProfile, tokens: { access: string; refresh: string }) => { localStorage.setItem('duobro_access', tokens.access); localStorage.setItem('duobro_refresh', tokens.refresh); signIn(profile); navigate('/shop', { replace: true }); };
+  const startSession = (profile: UserProfile, tokens: { access: string }) => { localStorage.setItem('duobro_access', tokens.access); signIn(profile); navigate('/shop', { replace: true }); };
   const handleSignUp = async (data: { firstName: string; lastName: string; email: string; phone: string; password: string }) => {
-    try { const result = await registerCustomer({ fullName: `${data.firstName} ${data.lastName}`.trim(), email: data.email, phone: data.phone, password: data.password }); startSession(result.user, result.tokens); }
+    try { await registerCustomer({ fullName: `${data.firstName} ${data.lastName}`.trim(), email: data.email, phone: data.phone, password: data.password }); alert('Account created. Check your email to verify it before signing in.'); navigate('/login', { replace: true }); }
     catch (error) { alert(error instanceof Error ? error.message : 'Signup failed.'); }
   };
   const handleSignIn = async (data: { email: string; password: string }) => {
     try { const result = await login({ email: data.email, password: data.password, portal: 'customer' }); startSession(result.user, result.tokens); }
     catch (error) { alert(error instanceof Error ? error.message : 'Login failed.'); }
   };
-  const handleAdminLogin = async (data: { email: string; password: string }) => { try { const result = await login({ ...data, portal: 'admin' }); localStorage.setItem('duobro_access', result.tokens.access); localStorage.setItem('duobro_refresh', result.tokens.refresh); signIn(result.user); navigate('/admin', { replace: true }); } catch (error) { alert(error instanceof Error ? error.message : 'Login failed.'); } };
-  const handleVendorLogin = async (data: { email: string; password: string }) => { try { const result = await login({ ...data, portal: 'vendor' }); localStorage.setItem('duobro_access', result.tokens.access); localStorage.setItem('duobro_refresh', result.tokens.refresh); signIn(result.user); navigate('/vendor', { replace: true }); } catch (error) { alert(error instanceof Error ? error.message : 'Login failed.'); } };
+  const handleAdminLogin = async (data: { email: string; password: string }) => { try { const result = await login({ ...data, portal: 'admin' }); localStorage.setItem('duobro_access', result.tokens.access); signIn(result.user); navigate('/admin', { replace: true }); } catch (error) { alert(error instanceof Error ? error.message : 'Login failed.'); } };
+  const handleVendorLogin = async (data: { email: string; password: string }) => { try { const result = await login({ ...data, portal: 'vendor' }); localStorage.setItem('duobro_access', result.tokens.access); signIn(result.user); navigate(result.user.must_change_password ? '/vendor/change-password' : '/vendor', { replace: true }); } catch (error) { alert(error instanceof Error ? error.message : 'Login failed.'); } };
 
   if (pathname === '/' || pathname === '/login') {
     if (user) return <Navigate to={user.role === 'admin' ? '/admin' : user.role === 'vendor' ? '/vendor' : '/shop'} replace />;
-    return <><ScrollToTop /><AuthPage onSignUp={handleSignUp} onSignIn={handleSignIn} /></>;
+    return <><ScrollToTop /><AuthPage onSignUp={handleSignUp} onSignIn={handleSignIn} onSocialLogin={startSocialLogin} /></>;
   }
 
   if (pathname === '/admin/login') {
@@ -776,6 +779,10 @@ function AppContent() {
   if (pathname === '/admin') {
     return user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/login" replace />;
   }
+  if (pathname === '/verify-email') return <AccountActionPage mode="verify" />;
+  if (pathname === '/forgot-password') return <AccountActionPage mode="forgot" />;
+  if (pathname === '/reset-password') return <AccountActionPage mode="reset" />;
+  if (pathname === '/social-callback') return <SocialCallbackPage onComplete={(profile, access) => { localStorage.setItem('duobro_access', access); signIn(profile); navigate('/shop', { replace: true }); }} />;
 
   if (pathname === '/vendor/login') {
     if (user?.role === 'vendor') return <Navigate to="/vendor" replace />;
@@ -783,7 +790,11 @@ function AppContent() {
   }
 
   if (pathname === '/vendor') {
-    return user?.role === 'vendor' ? <VendorPanel name={user.name} onLogout={() => { logout(); navigate('/vendor/login', { replace: true }); }} /> : <Navigate to="/login" replace />;
+    return user?.role === 'vendor' ? user.must_change_password ? <Navigate to="/vendor/change-password" replace /> : <VendorPanel name={user.name} onLogout={() => { logout(); navigate('/vendor/login', { replace: true }); }} /> : <Navigate to="/login" replace />;
+  }
+
+  if (pathname === '/vendor/change-password') {
+    return user?.role === 'vendor' ? <VendorPasswordPage onComplete={() => { signIn({ ...user, must_change_password: false }); navigate('/vendor', { replace: true }); }} /> : <Navigate to="/login" replace />;
   }
 
   return (
@@ -811,7 +822,7 @@ export default function App() {
   return <BrowserRouter><AuthProvider><CartProvider><AppContent /></CartProvider></AuthProvider></BrowserRouter>;
 }
 
-interface UserProfile { name: string; email: string; phone: string; role: 'customer' | 'vendor' | 'admin' }
+interface UserProfile { name: string; email: string; phone: string; role: 'customer' | 'vendor' | 'admin'; must_change_password?: boolean }
 interface AuthCtx { user: UserProfile | null; signIn: (profile: UserProfile) => void; logout: () => void }
 const AuthContext = createContext<AuthCtx | null>(null);
 function useAuth() { const a = useContext(AuthContext); if (!a) throw new Error('no auth'); return a; }

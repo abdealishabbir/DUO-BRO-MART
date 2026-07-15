@@ -16,12 +16,22 @@ This checklist follows the phase roadmap in `DUOBROMART.md`. A checked item mean
 - [x] Customer, vendor, and admin portal routes: `/login`, `/vendor/login`, `/admin/login`
 - [x] Client-side role redirects and protected prototype routes for `/vendor` and `/admin`
 - [x] Django-backed customer signup/login and password hashing with JWT API endpoints
-- [ ] Email verification and password reset delivery
+- [x] Email verification and password reset API + frontend flows (console email locally; SMTP configurable)
 - [ ] Google and Facebook OAuth
 - [x] Vendor/admin/customer API login separation; unapproved vendors are rejected by the backend
-- [ ] Admin-issued vendor credentials and forced first-password change workflow
-- [ ] Server-enforced RBAC, JWT/refresh sessions, rate limiting, CAPTCHA, and audit logs
+- [x] Admin-issued vendor credentials and forced first-password change workflow
+- [x] JWT refresh-token HTTP-only cookie, login throttling, and audit-log plumbing
+- [x] Google/Facebook OAuth backend callbacks and frontend sign-in entry points (provider credentials required to activate)
+- [ ] CAPTCHA activation — an hCaptcha/Turnstile site key and secret are required
 
 ## Next implementation target
 
 Implement verification and recovery emails, then move browser-held JWTs to secure HttpOnly refresh-token cookies before production deployment.
+
+## Phase 2 — Catalog & Storefront Core
+
+- [x] PostgreSQL category, brand, and product models
+- [x] Vendor submission → admin approval workflow API
+- [x] Public approved-product list API, including category/brand/search filters
+- [ ] Connect live catalog data to shop, home, product detail, vendor, and admin screens
+- [ ] Home sections, deals, carousel, and storefront pagination

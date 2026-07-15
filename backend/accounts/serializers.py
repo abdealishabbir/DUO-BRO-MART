@@ -39,8 +39,24 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
     portal = serializers.ChoiceField(choices=[User.Role.CUSTOMER, User.Role.VENDOR, User.Role.ADMIN])
+    captcha_token = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True, validators=[validate_password])
+
+
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+
+
+class VendorCredentialSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    temporary_password = serializers.CharField(write_only=True, validators=[validate_password])

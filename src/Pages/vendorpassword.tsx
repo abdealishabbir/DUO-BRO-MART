@@ -1,0 +1,8 @@
+import { useState } from 'react';
+import { changePassword } from '../api/auth';
+
+export default function VendorPasswordPage({ onComplete }: { onComplete: () => void }): JSX.Element {
+  const [current, setCurrent] = useState(''); const [next, setNext] = useState(''); const [message, setMessage] = useState('');
+  const submit = async (event: React.FormEvent) => { event.preventDefault(); try { await changePassword(localStorage.getItem('duobro_access') || '', current, next); onComplete(); } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to change password.'); } };
+  return <main className="min-h-screen bg-[#FBF7EF] flex items-center justify-center p-5"><form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#E0912A]">Vendor security</p><h1 className="mt-2 text-2xl font-bold text-[#101A2E]">Change your temporary password</h1><p className="mt-2 text-sm text-[#5B6B85]">This is required before you can access your seller workspace.</p><label className="mt-6 block text-sm font-bold">Temporary password<input required type="password" value={current} onChange={(e) => setCurrent(e.target.value)} className="mt-1.5 w-full rounded-xl border border-neutral-200 px-3.5 py-3" /></label><label className="mt-4 block text-sm font-bold">New password<input required minLength={8} type="password" value={next} onChange={(e) => setNext(e.target.value)} className="mt-1.5 w-full rounded-xl border border-neutral-200 px-3.5 py-3" /></label><button className="mt-6 w-full rounded-xl bg-[#101A2E] py-3 font-bold text-white">Save new password</button>{message && <p className="mt-4 text-sm text-red-600">{message}</p>}</form></main>;
+}
