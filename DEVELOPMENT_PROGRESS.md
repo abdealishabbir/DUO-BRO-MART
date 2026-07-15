@@ -33,5 +33,7 @@ Implement verification and recovery emails, then move browser-held JWTs to secur
 - [x] PostgreSQL category, brand, and product models
 - [x] Vendor submission → admin approval workflow API
 - [x] Public approved-product list API, including category/brand/search filters
-- [ ] Connect live catalog data to shop, home, product detail, vendor, and admin screens
-- [ ] Home sections, deals, carousel, and storefront pagination
+- [x] Live public catalog connected to the shop page with static fallback
+- [x] Vendor product-submission form connected to the catalog API
+- [x] Connect live catalog data to home featured products, product detail, and admin approval queue
+- [ ] Complete shop filters (price, brand, rating), deals, pagination, and home carousel sections

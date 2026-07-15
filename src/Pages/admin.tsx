@@ -3,6 +3,7 @@ import {
   BarChart3, Box, Image, ShoppingBag, Users, Tag, Settings, LogOut, Plus,
   Search, Pencil, Trash2, GripVertical, Upload, X,
 } from 'lucide-react';
+import LiveProductQueue from './liveproductqueue';
 
 type Section = 'dashboard' | 'products' | 'banners' | 'orders' | 'vendors' | 'pricing' | 'settings';
 type OrderStatus = 'Delivered' | 'Processing' | 'Pending' | 'Cancelled';
@@ -58,7 +59,7 @@ export default function AdminPanel(): JSX.Element {
 
     <main className="min-w-0 flex-1 p-5 sm:p-7 lg:p-8"><div className="mb-6 flex flex-wrap items-center justify-between gap-4"><h1 className="text-2xl font-extrabold tracking-tight">{title[section]}</h1>{section === 'products' && <div className="flex gap-3"><label className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products..." className="w-56 rounded-lg border border-[#ead8ca] bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[#cf6637]" /></label><button onClick={() => setProductPanel(true)} className="inline-flex items-center gap-2 rounded-lg bg-[#cf6637] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#b9552c]"><Plus size={17} />Add Product</button></div>}{section === 'banners' && <button className="inline-flex items-center gap-2 rounded-lg bg-[#cf6637] px-4 py-2.5 text-sm font-bold text-white"><Plus size={17} />Add New Banner</button>}{section === 'pricing' && <button className="rounded-lg bg-[#cf6637] px-4 py-2.5 text-sm font-bold text-white">Save All Changes</button>}</div>
       {section === 'dashboard' && <Dashboard setSection={setSection} />}
-      {section === 'products' && <Products items={filteredProducts} />}
+      {section === 'products' && <><LiveProductQueue /><Products items={filteredProducts} /></>}
       {section === 'banners' && <Banners />}
       {section === 'orders' && <Orders filter={orderFilter} setFilter={setOrderFilter} />}
       {section === 'vendors' && <Vendors />}

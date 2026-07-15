@@ -10,5 +10,5 @@ class ProductSerializer(serializers.ModelSerializer):
     brand_name = serializers.CharField(source="brand.name", read_only=True)
     class Meta:
         model = Product
-        fields = ("id", "name", "slug", "description", "price", "stock", "image_url", "status", "category", "category_name", "brand", "brand_name", "created_at")
+        fields = ("id", "name", "slug", "description", "price", "stock", "image_url", "discount_percent", "average_rating", "is_featured", "is_flash_deal", "is_bogo", "status", "category", "category_name", "brand", "brand_name", "created_at")
         read_only_fields = ("status",)

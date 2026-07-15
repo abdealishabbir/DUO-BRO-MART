@@ -9,6 +9,7 @@ import { login, registerCustomer, startSocialLogin } from './api/auth';
 import AccountActionPage from './Pages/accountaction';
 import VendorPasswordPage from './Pages/vendorpassword';
 import SocialCallbackPage from './Pages/socialcallback';
+import { fetchCatalogProduct, fetchCatalogProducts, fetchHomeCatalog } from './api/catalog';
 import {
   ShoppingBag, Menu, X, Minus, Plus, Trash2, ArrowLeft, MessageCircle,
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
@@ -195,6 +196,7 @@ function CartModal() {
             <a href="https://wa.me/923313146400" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 bg-[#25D366] text-white py-3 px-7 rounded-full text-[15px] font-bold transition-colors hover:bg-[#1DA851] shadow-[0_4px_20px_rgba(37,211,102,0.4)]"><MessageCircle size={20} /> Chat on WhatsApp</a>
           </div>
         )}
+        {total > 20 && <div className="mt-8 flex justify-center gap-3"><button disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="rounded-full border px-4 py-2 disabled:opacity-40">Previous</button><span className="py-2 text-sm">Page {page}</span><button disabled={page * 20 >= total} onClick={() => setPage((value) => value + 1)} className="rounded-full border px-4 py-2 disabled:opacity-40">Next</button></div>}
       </div>
     </div>
   );
@@ -214,6 +216,9 @@ const featureList = [
 ];
 
 function HomePage() {
+  const [liveFeatured, setLiveFeatured] = useState<typeof featuredProducts>([]);
+  useEffect(() => { fetchHomeCatalog().then((data) => setLiveFeatured(data.featured.map((item) => ({ id: item.id, name: item.name, price: `Rs ${Number(item.price).toLocaleString()}`, image: item.image_url, discount: item.discount_percent })))).catch(() => undefined); }, []);
+  const homepageFeatured = liveFeatured.length ? liveFeatured : featuredProducts;
   return (
     <div>
       <section className="relative h-screen min-h-[600px] overflow-hidden flex items-center justify-center text-center mt-16">
@@ -228,13 +233,15 @@ function HomePage() {
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[rgba(255,255,255,0.6)] text-[11px] tracking-[2px] uppercase text-center animate-[bounce_2s_infinite]"><ChevronDown size={16} className="mx-auto" />scroll</div>
       </section>
 
+      <LiveHomeSections />
+
       <section className="py-16 px-5 max-w-[1200px] mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-['Playfair_Display'] text-[clamp(28px,5vw,44px)] font-bold mb-3">Featured Collections</h2>
           <p className="text-base text-[var(--muted)]">Discover our top-selling items with exclusive discounts</p>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-4 mb-12">
-          {featuredProducts.map((p, i) => (
+          {homepageFeatured.map((p, i) => (
             <Link key={i} to={`/product/${p.id}`} className="bg-white rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(28,28,30,0.08)] border border-[var(--border)] transition-all duration-250 hover:-translate-y-1 hover:shadow-[0_12px_48px_rgba(28,28,30,0.15)]">
               <div className="w-full aspect-square overflow-hidden bg-[#F0EBE5] relative">
                 <img src={p.image} alt={p.name} className="w-full h-full object-cover transition-transform duration-400 hover:scale-105" />
@@ -310,14 +317,19 @@ const GROUPS = [{ key: 'all', label: 'All Products' }, { key: 'fashion', label: 
 
 function ShopPage() {
   const { addToCart } = useCart();
+  const [liveProducts, setLiveProducts] = useState<Product[]>([]);
+  const [brand, setBrand] = useState(''); const [minPrice, setMinPrice] = useState(''); const [maxPrice, setMaxPrice] = useState(''); const [minRating, setMinRating] = useState(''); const [page, setPage] = useState(1); const [total, setTotal] = useState(0);
   const [activeGroup, setActiveGroup] = useState('all');
   const [activeSubCat, setActiveSubCat] = useState('all');
   const [addedId, setAddedId] = useState<number | null>(null);
   const [toast, setToast] = useState('');
-  const subCats = activeGroup === 'all' ? [...new Set(PRODUCTS.map((p) => p.category))].sort() : [...new Set(PRODUCTS.filter((p) => p.group === activeGroup).map((p) => p.category))].sort();
-  const filtered = PRODUCTS.filter((p) => (activeGroup === 'all' || p.group === activeGroup) && (activeSubCat === 'all' || p.category === activeSubCat));
+  const catalogProducts = liveProducts.length ? liveProducts : PRODUCTS;
+  const subCats = activeGroup === 'all' ? [...new Set(catalogProducts.map((p) => p.category))].sort() : [...new Set(catalogProducts.filter((p) => p.group === activeGroup).map((p) => p.category))].sort();
+  const filtered = catalogProducts.filter((p) => (activeGroup === 'all' || p.group === activeGroup) && (activeSubCat === 'all' || p.category === activeSubCat));
   const handleAdd = (p: Product) => { addToCart({ id: p.id, name: p.name, price: p.price, image: p.image, discount: p.discount || 0 }); setAddedId(p.id); setToast(`${p.name} added to cart`); setTimeout(() => setAddedId(null), 1500); setTimeout(() => setToast(''), 2200); };
   useEffect(() => { setActiveSubCat('all'); }, [activeGroup]);
+  useEffect(() => { setPage(1); }, [activeSubCat, brand, minPrice, maxPrice, minRating]);
+  useEffect(() => { fetchCatalogProducts({ page: String(page), category: activeSubCat === 'all' ? '' : activeSubCat.toLowerCase().replaceAll(' ', '-'), brand, min_price: minPrice, max_price: maxPrice, min_rating: minRating }).then(({ items, count }) => { setTotal(count); setLiveProducts(items.map((item) => ({ id: item.id, name: item.name, price: Number(item.price), category: item.category_name, group: 'all', image: item.image_url, discount: item.discount_percent, desc: item.description }))); }).catch(() => undefined); }, [activeSubCat, brand, maxPrice, minPrice, minRating, page]);
 
   return (
     <div className="pt-20">
@@ -364,7 +376,9 @@ function ProductDetailPage() {
   const { addToCart, setCartOpen } = useCart();
   const [added, setAdded] = useState(false);
   const [qty, setQty] = useState(1);
-  const product = PRODUCTS.find((p) => p.id === Number(id));
+  const [liveProduct, setLiveProduct] = useState<Product | null>(null);
+  useEffect(() => { if (id) fetchCatalogProduct(id).then((item) => setLiveProduct({ id: item.id, name: item.name, price: Number(item.price), category: item.category_name, group: 'all', image: item.image_url, discount: item.discount_percent, desc: item.description })).catch(() => setLiveProduct(null)); }, [id]);
+  const product = liveProduct || PRODUCTS.find((p) => p.id === Number(id));
 
   if (!product) return (
     <div className="max-w-[900px] mx-auto px-5 pt-24 pb-16 text-center">
@@ -744,9 +758,20 @@ function ProfilePage() {
           <div className="bg-[var(--charcoal)] px-6 py-7 sm:px-9 flex items-center gap-4"><div className="w-16 h-16 shrink-0 rounded-full bg-[var(--accent)] text-white text-xl font-bold flex items-center justify-center">{initials}</div><div><h2 className="font-['Playfair_Display'] text-2xl font-bold text-white">{user.name}</h2><p className="text-sm text-white/65 capitalize mt-1">{user.role} account</p></div></div>
           <div className="p-6 sm:p-9"><h3 className="text-sm font-bold uppercase tracking-wider text-[var(--muted)] mb-5">Personal information</h3><dl className="divide-y divide-[var(--border)]"><div className="py-4 grid gap-1 sm:grid-cols-[150px_1fr]"><dt className="text-sm font-semibold text-[var(--muted)]">Full name</dt><dd className="text-[var(--charcoal)]">{user.name}</dd></div><div className="py-4 grid gap-1 sm:grid-cols-[150px_1fr]"><dt className="text-sm font-semibold text-[var(--muted)]">Email address</dt><dd className="text-[var(--charcoal)] break-all">{user.email}</dd></div><div className="py-4 grid gap-1 sm:grid-cols-[150px_1fr]"><dt className="text-sm font-semibold text-[var(--muted)]">Phone number</dt><dd className="text-[var(--charcoal)]">{user.phone}</dd></div></dl><div className="mt-8 pt-6 border-t border-[var(--border)]"><button onClick={handleLogout} className="inline-flex items-center gap-2 rounded-full bg-[var(--charcoal)] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--warm-brown)]"><LogOut size={17} /> Logout</button></div></div>
         </div>
+        <div className="mb-7 grid gap-3 rounded-xl border border-[var(--border)] bg-white p-4 sm:grid-cols-4"><input value={minPrice} onChange={(e) => setMinPrice(e.target.value)} type="number" min="0" placeholder="Min price" className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm" /><input value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} type="number" min="0" placeholder="Max price" className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm" /><input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand slug" className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm" /><select value={minRating} onChange={(e) => setMinRating(e.target.value)} className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm"><option value="">Any rating</option><option value="4">4★ & up</option><option value="3">3★ & up</option><option value="2">2★ & up</option></select></div>
       </section>
     </div>
   );
+}
+
+interface HomeCatalogCard { id: number; name: string; price: string; image_url: string; discount_percent: number }
+function LiveHomeSections() {
+  const [flash, setFlash] = useState<HomeCatalogCard[]>([]); const [arrivals, setArrivals] = useState<HomeCatalogCard[]>([]); const [slide, setSlide] = useState(0);
+  useEffect(() => { fetchHomeCatalog().then((data) => { setFlash(data.flash_deals); setArrivals(data.new_arrivals); }).catch(() => undefined); }, []);
+  useEffect(() => { if (!flash.length) return; const timer = window.setInterval(() => setSlide((value) => (value + 1) % flash.length), 5000); return () => window.clearInterval(timer); }, [flash.length]);
+  const Card = ({ item }: { item: HomeCatalogCard }) => <Link to={`/product/${item.id}`} className="rounded-xl border border-[var(--border)] bg-white p-3 shadow-sm"><img src={item.image_url} alt={item.name} className="aspect-square w-full rounded-lg object-cover bg-[#F0EBE5]" /><p className="mt-2 text-sm font-bold">{item.name}</p><p className="text-sm text-[var(--accent-dark)]">Rs {Number(item.price).toLocaleString()}</p></Link>;
+  if (!flash.length && !arrivals.length) return null;
+  return <section className="max-w-[1200px] mx-auto px-5 py-12 space-y-12">{flash.length > 0 && <div><div className="mb-5 flex items-center justify-between"><h2 className="font-['Playfair_Display'] text-3xl font-bold">Flash Deals</h2><span className="text-xs font-bold text-[#EF4444]">AUTO-ROTATING DEAL</span></div><div className="mx-auto max-w-sm"><Card item={flash[slide]} /></div></div>}{arrivals.length > 0 && <div><h2 className="mb-5 font-['Playfair_Display'] text-3xl font-bold">New Arrivals</h2><div className="grid grid-cols-2 gap-4 md:grid-cols-4">{arrivals.map((item) => <Card key={item.id} item={item} />)}</div></div>}</section>;
 }
 
 function AppContent() {
