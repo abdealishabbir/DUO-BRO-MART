@@ -38,3 +38,14 @@ Implement verification and recovery emails, then move browser-held JWTs to secur
 - [x] Connect live catalog data to home featured products, product detail, and admin approval queue
 - [x] Shop price/brand/rating filters and pagination controls
 - [x] Live Flash Deals auto-rotation and New Arrivals storefront sections
+
+## Phase 3 — Cart & 4-Level Checkout
+
+- [x] Persistent Django cart API synchronized with the storefront cart
+- [x] Shipping screen: province/city, rural landmark pickup, and three delivery tiers
+- [x] Payment selection: COD, card, Easypaisa, JazzCash, and NayaPay with token-only payment handling
+- [x] Admin payment-gateway enable/disable API and gateway availability enforcement
+- [x] Order confirmation, `DBM-…` tracking code, tracking screen, and confirmation email
+- [x] Admin order-status API with shipped/delivered transaction emails
+- [x] Atomic stock reservation with database row locking and oversell prevention
+- [ ] Activate card/wallet providers with their merchant credentials and client tokenization SDKs

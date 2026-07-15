@@ -10,6 +10,7 @@ import AccountActionPage from './Pages/accountaction';
 import VendorPasswordPage from './Pages/vendorpassword';
 import SocialCallbackPage from './Pages/socialcallback';
 import { fetchCatalogProduct, fetchCatalogProducts, fetchHomeCatalog } from './api/catalog';
+import { checkout, trackOrder } from './api/orders';
 import {
   ShoppingBag, Menu, X, Minus, Plus, Trash2, ArrowLeft, MessageCircle,
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
@@ -33,6 +34,8 @@ function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>(() => { try { return JSON.parse(localStorage.getItem('duobro_cart') || '[]'); } catch { return []; } });
   const [cartOpen, setCartOpen] = useState(false);
   useEffect(() => { localStorage.setItem('duobro_cart', JSON.stringify(cart)); }, [cart]);
+  useEffect(() => { const access = localStorage.getItem('duobro_access'); if (!access) return; fetch('http://localhost:8000/api/cart/', { headers: { Authorization: `Bearer ${access}` } }).then(async (response) => { if (!response.ok) return; const data = await response.json() as { items: { product_id: number; name: string; price: string; quantity: number }[] }; if (data.items.length) setCart(data.items.map((item) => ({ id: item.product_id, name: item.name, price: Number(item.price), image: '', qty: item.quantity, discount: 0 }))); }).catch(() => undefined); }, []);
+  useEffect(() => { const access = localStorage.getItem('duobro_access'); if (!access) return; fetch('http://localhost:8000/api/cart/', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${access}` }, body: JSON.stringify(cart.map((item) => ({ product_id: item.id, quantity: item.qty }))) }).catch(() => undefined); }, [cart]);
   const addToCart = (item: Omit<CartItem, 'qty'>) => setCart((p) => { const e = p.find((i) => i.id === item.id); return e ? p.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i) : [...p, { ...item, qty: 1 }]; });
   const changeQty = (id: number, d: number) => setCart((p) => p.map((i) => i.id === id ? { ...i, qty: i.qty + d } : i).filter((i) => i.qty > 0));
   const removeItem = (id: number) => setCart((p) => p.filter((i) => i.id !== id));
@@ -170,7 +173,7 @@ function CartModal() {
             {cart.length > 0 && (
               <button onClick={continueShopping} className="w-full bg-white text-[var(--charcoal)] border-2 border-[var(--border)] rounded-full py-3.5 text-[15px] font-semibold cursor-pointer transition-colors mb-3 hover:border-[var(--charcoal)] hover:bg-[var(--cream)]">Continue Shopping</button>
             )}
-            <button onClick={() => cart.length > 0 && setView('checkout')} disabled={cart.length === 0} className="w-full bg-[var(--accent)] text-white border-none rounded-full py-4 text-[15px] font-bold cursor-pointer transition-colors shadow-[0_4px_20px_rgba(200,149,108,0.4)] hover:bg-[var(--accent-dark)] disabled:bg-[#ccc] disabled:cursor-not-allowed disabled:shadow-none">Proceed to Confirm Order</button>
+            <button onClick={() => { if (cart.length) { close(); navigate('/checkout/shipping'); } }} disabled={cart.length === 0} className="w-full bg-[var(--accent)] text-white border-none rounded-full py-4 text-[15px] font-bold cursor-pointer transition-colors shadow-[0_4px_20px_rgba(200,149,108,0.4)] hover:bg-[var(--accent-dark)] disabled:bg-[#ccc] disabled:cursor-not-allowed disabled:shadow-none">Proceed to Checkout</button>
           </div>
         </>)}
 
@@ -764,6 +767,17 @@ function ProfilePage() {
   );
 }
 
+function CheckoutPage({ step }: { step: 'shipping' | 'payment' | 'confirmation' }) {
+  const { cart, clearCart } = useCart(); const navigate = useNavigate(); const [message, setMessage] = useState('');
+  const saved = JSON.parse(localStorage.getItem('duobro_shipping') || '{}') as Record<string, string>;
+  const submitShipping = (event: React.FormEvent<HTMLFormElement>) => { event.preventDefault(); localStorage.setItem('duobro_shipping', JSON.stringify(Object.fromEntries(new FormData(event.currentTarget).entries()))); navigate('/checkout/payment'); };
+  const submitPayment = async (event: React.FormEvent<HTMLFormElement>) => { event.preventDefault(); try { const payment_method = String(new FormData(event.currentTarget).get('payment_method')); const shipping = JSON.parse(localStorage.getItem('duobro_shipping') || '{}'); const result = await checkout(localStorage.getItem('duobro_access') || '', { ...shipping, rural_pickup: shipping.rural_pickup === 'on', payment_method, items: cart.map((item) => ({ product_id: item.id, quantity: item.qty })) }); localStorage.setItem('duobro_last_order', result.code); clearCart(); navigate('/checkout/confirmation'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to place order.'); } };
+  if (step === 'confirmation') { const code = localStorage.getItem('duobro_last_order'); return <main className="min-h-screen bg-[var(--cream)] pt-28 px-5 text-center"><h1 className="font-['Playfair_Display'] text-4xl font-bold">Order Confirmed</h1><p className="mt-4 text-[var(--muted)]">Thank you! Your tracking code is <strong>{code}</strong>.</p><Link to={`/track-order?code=${code || ''}`} className="mt-7 inline-block rounded-full bg-[var(--accent)] px-7 py-3 font-bold text-white">Track Order</Link></main>; }
+  return <main className="min-h-screen bg-[var(--cream)] pt-24 px-5 pb-12"><form onSubmit={step === 'shipping' ? submitShipping : submitPayment} className="mx-auto max-w-2xl rounded-2xl bg-white p-7 shadow-sm"><p className="text-xs font-bold uppercase tracking-widest text-[var(--accent)]">Checkout · {step === 'shipping' ? '2 of 4' : '3 of 4'}</p><h1 className="mt-2 font-['Playfair_Display'] text-3xl font-bold">{step === 'shipping' ? 'Shipping details' : 'Payment method'}</h1>{step === 'shipping' ? <div className="mt-6 grid gap-4 sm:grid-cols-2"><input required name="full_name" defaultValue={saved.full_name} placeholder="Full name" className="rounded-xl border p-3" /><input required name="phone" defaultValue={saved.phone} placeholder="03XX-XXXXXXX" className="rounded-xl border p-3" /><select required name="province" defaultValue={saved.province} className="rounded-xl border p-3"><option value="">Province</option><option>Sindh</option><option>Punjab</option><option>KPK</option><option>Balochistan</option></select><input required name="city" defaultValue={saved.city} placeholder="City" className="rounded-xl border p-3" /><textarea required name="address" defaultValue={saved.address} placeholder="House, street, area" className="min-h-28 rounded-xl border p-3 sm:col-span-2" /><label className="sm:col-span-2"><input name="rural_pickup" type="checkbox" defaultChecked={saved.rural_pickup === 'on'} /> Rural pickup / courier branch</label><input name="landmark" defaultValue={saved.landmark} placeholder="Landmark or courier branch (required for rural pickup)" className="rounded-xl border p-3 sm:col-span-2" /><select required name="delivery_method" defaultValue={saved.delivery_method || 'standard'} className="rounded-xl border p-3 sm:col-span-2"><option value="standard">Standard — PKR 250</option><option value="express">Express — PKR 400</option><option value="urgent">Urgent — PKR 650</option></select></div> : <div className="mt-6 space-y-3">{[['cod','Cash on Delivery'],['card','Card'],['easypaisa','Easypaisa'],['jazzcash','JazzCash'],['nayapay','NayaPay']].map(([value, label]) => <label key={value} className="block rounded-xl border p-4"><input required name="payment_method" type="radio" value={value} defaultChecked={value === 'cod'} /> <strong>{label}</strong></label>)}<p className="text-sm text-[var(--muted)]">Card and wallet payments use gateway tokenization when production credentials are configured.</p></div>}<button className="mt-7 rounded-full bg-[var(--accent)] px-7 py-3 font-bold text-white">{step === 'shipping' ? 'Continue to Payment' : 'Place Order'}</button>{message && <p className="mt-4 text-sm text-red-600">{message}</p>}</form></main>;
+}
+
+function TrackOrderPage() { const params = new URLSearchParams(useLocation().search); const [result, setResult] = useState<{ code: string; status: string; delivery_method: string } | null>(null); const [code, setCode] = useState(params.get('code') || ''); const [message, setMessage] = useState(''); const search = (event: React.FormEvent) => { event.preventDefault(); trackOrder(code).then(setResult).catch((error) => setMessage(error.message)); }; return <main className="min-h-screen bg-[var(--cream)] pt-28 px-5"><form onSubmit={search} className="mx-auto max-w-md rounded-2xl bg-white p-7"><h1 className="font-['Playfair_Display'] text-3xl font-bold">Track order</h1><input value={code} onChange={(event) => setCode(event.target.value)} placeholder="DBM-XXXXXXXX" className="mt-5 w-full rounded-xl border p-3" /><button className="mt-3 rounded-full bg-[var(--charcoal)] px-6 py-3 font-bold text-white">Track</button>{result && <p className="mt-5">{result.code}: <strong className="capitalize">{result.status}</strong> · {result.delivery_method}</p>}{message && <p className="mt-5 text-red-600">{message}</p>}</form></main>; }
+
 interface HomeCatalogCard { id: number; name: string; price: string; image_url: string; discount_percent: number }
 function LiveHomeSections() {
   const [flash, setFlash] = useState<HomeCatalogCard[]>([]); const [arrivals, setArrivals] = useState<HomeCatalogCard[]>([]); const [slide, setSlide] = useState(0);
@@ -807,6 +821,10 @@ function AppContent() {
   if (pathname === '/verify-email') return <AccountActionPage mode="verify" />;
   if (pathname === '/forgot-password') return <AccountActionPage mode="forgot" />;
   if (pathname === '/reset-password') return <AccountActionPage mode="reset" />;
+  if (pathname === '/checkout/shipping') return <CheckoutPage step="shipping" />;
+  if (pathname === '/checkout/payment') return <CheckoutPage step="payment" />;
+  if (pathname === '/checkout/confirmation') return <CheckoutPage step="confirmation" />;
+  if (pathname === '/track-order') return <TrackOrderPage />;
   if (pathname === '/social-callback') return <SocialCallbackPage onComplete={(profile, access) => { localStorage.setItem('duobro_access', access); signIn(profile); navigate('/shop', { replace: true }); }} />;
 
   if (pathname === '/vendor/login') {
