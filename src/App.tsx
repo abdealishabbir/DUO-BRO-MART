@@ -5,6 +5,7 @@ import AdminPanel from './Pages/admin';
 import AdminLoginPage from './Pages/adminlogin';
 import VendorLoginPage from './Pages/vendorlogin';
 import VendorPanel from './Pages/vendor';
+import { login, registerCustomer } from './api/auth';
 import {
   ShoppingBag, Menu, X, Minus, Plus, Trash2, ArrowLeft, MessageCircle,
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
@@ -750,16 +751,17 @@ function AppContent() {
   const { user, signIn, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const startSession = (profile: UserProfile) => { signIn(profile); navigate('/home', { replace: true }); };
-  const handleSignUp = (data: { firstName: string; lastName: string; email: string; phone: string }) => startSession({ name: `${data.firstName} ${data.lastName}`.trim(), email: data.email, phone: data.phone, role: 'customer' });
-  const handleSignIn = (data: { email: string }) => {
-    let stored: UserProfile | null = null;
-    try { stored = JSON.parse(localStorage.getItem('duobro_user') || 'null'); } catch { /* use entered details */ }
-    if (stored && stored.email.toLowerCase() === data.email.toLowerCase()) startSession(stored);
-    else startSession({ name: data.email.split('@')[0] || 'Customer', email: data.email, phone: 'Not provided', role: 'customer' });
+  const startSession = (profile: UserProfile, tokens: { access: string; refresh: string }) => { localStorage.setItem('duobro_access', tokens.access); localStorage.setItem('duobro_refresh', tokens.refresh); signIn(profile); navigate('/shop', { replace: true }); };
+  const handleSignUp = async (data: { firstName: string; lastName: string; email: string; phone: string; password: string }) => {
+    try { const result = await registerCustomer({ fullName: `${data.firstName} ${data.lastName}`.trim(), email: data.email, phone: data.phone, password: data.password }); startSession(result.user, result.tokens); }
+    catch (error) { alert(error instanceof Error ? error.message : 'Signup failed.'); }
   };
-  const handleAdminLogin = (data: { email: string }) => { signIn({ name: 'Administrator', email: data.email, phone: 'Not provided', role: 'admin' }); navigate('/admin', { replace: true }); };
-  const handleVendorLogin = (data: { email: string }) => { signIn({ name: data.email.split('@')[0] || 'Vendor', email: data.email, phone: 'Not provided', role: 'vendor' }); navigate('/vendor', { replace: true }); };
+  const handleSignIn = async (data: { email: string; password: string }) => {
+    try { const result = await login({ email: data.email, password: data.password, portal: 'customer' }); startSession(result.user, result.tokens); }
+    catch (error) { alert(error instanceof Error ? error.message : 'Login failed.'); }
+  };
+  const handleAdminLogin = async (data: { email: string; password: string }) => { try { const result = await login({ ...data, portal: 'admin' }); localStorage.setItem('duobro_access', result.tokens.access); localStorage.setItem('duobro_refresh', result.tokens.refresh); signIn(result.user); navigate('/admin', { replace: true }); } catch (error) { alert(error instanceof Error ? error.message : 'Login failed.'); } };
+  const handleVendorLogin = async (data: { email: string; password: string }) => { try { const result = await login({ ...data, portal: 'vendor' }); localStorage.setItem('duobro_access', result.tokens.access); localStorage.setItem('duobro_refresh', result.tokens.refresh); signIn(result.user); navigate('/vendor', { replace: true }); } catch (error) { alert(error instanceof Error ? error.message : 'Login failed.'); } };
 
   if (pathname === '/' || pathname === '/login') {
     if (user) return <Navigate to={user.role === 'admin' ? '/admin' : user.role === 'vendor' ? '/vendor' : '/shop'} replace />;
@@ -817,6 +819,6 @@ function useAuth() { const a = useContext(AuthContext); if (!a) throw new Error(
 function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(() => { try { return JSON.parse(localStorage.getItem('duobro_user') || 'null'); } catch { return null; } });
   const signIn = (profile: UserProfile) => { setUser(profile); localStorage.setItem('duobro_user', JSON.stringify(profile)); };
-  const logout = () => { setUser(null); localStorage.removeItem('duobro_user'); };
+  const logout = () => { setUser(null); localStorage.removeItem('duobro_user'); localStorage.removeItem('duobro_access'); localStorage.removeItem('duobro_refresh'); };
   return <AuthContext.Provider value={{ user, signIn, logout }}>{children}</AuthContext.Provider>;
 }

@@ -6,8 +6,8 @@ This checklist follows the phase roadmap in `DUOBROMART.md`. A checked item mean
 
 - [x] React + TypeScript + Vite storefront scaffold
 - [x] Tailwind styling and shared storefront components
-- [ ] Django + Django REST Framework project
-- [ ] PostgreSQL schema and migrations
+- [x] Django + Django REST Framework project
+- [x] PostgreSQL database configuration and local Docker Compose service
 - [ ] Docker Compose, CI pipeline, and deployed staging API
 
 ## Phase 1 — Authentication & Roles
@@ -15,11 +15,13 @@ This checklist follows the phase roadmap in `DUOBROMART.md`. A checked item mean
 - [x] Customer signup/sign-in interface, including password-strength and Pakistani phone-number fields
 - [x] Customer, vendor, and admin portal routes: `/login`, `/vendor/login`, `/admin/login`
 - [x] Client-side role redirects and protected prototype routes for `/vendor` and `/admin`
-- [ ] Django-backed customer signup/login, password hashing, verification, and password reset
+- [x] Django-backed customer signup/login and password hashing with JWT API endpoints
+- [ ] Email verification and password reset delivery
 - [ ] Google and Facebook OAuth
-- [ ] Approved-vendor credential issue, forced password change, and real vendor authorization
+- [x] Vendor/admin/customer API login separation; unapproved vendors are rejected by the backend
+- [ ] Admin-issued vendor credentials and forced first-password change workflow
 - [ ] Server-enforced RBAC, JWT/refresh sessions, rate limiting, CAPTCHA, and audit logs
 
 ## Next implementation target
 
-Create the Django + PostgreSQL API foundation so the remaining Phase 1 authentication and security requirements can be implemented safely. Browser `localStorage` is used only by the current prototype and must not be used as production authentication.
+Implement verification and recovery emails, then move browser-held JWTs to secure HttpOnly refresh-token cookies before production deployment.
