@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate,
 import AuthPage from './Pages/login';
 import AdminPanel from './Pages/admin';
 import AdminLoginPage from './Pages/adminlogin';
+import VendorLoginPage from './Pages/vendorlogin';
+import VendorPanel from './Pages/vendor';
 import {
   ShoppingBag, Menu, X, Minus, Plus, Trash2, ArrowLeft, MessageCircle,
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
@@ -745,7 +747,7 @@ function ProfilePage() {
 
 function AppContent() {
   useCart();
-  const { user, signIn } = useAuth();
+  const { user, signIn, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const startSession = (profile: UserProfile) => { signIn(profile); navigate('/home', { replace: true }); };
@@ -757,19 +759,29 @@ function AppContent() {
     else startSession({ name: data.email.split('@')[0] || 'Customer', email: data.email, phone: 'Not provided', role: 'customer' });
   };
   const handleAdminLogin = (data: { email: string }) => { signIn({ name: 'Administrator', email: data.email, phone: 'Not provided', role: 'admin' }); navigate('/admin', { replace: true }); };
+  const handleVendorLogin = (data: { email: string }) => { signIn({ name: data.email.split('@')[0] || 'Vendor', email: data.email, phone: 'Not provided', role: 'vendor' }); navigate('/vendor', { replace: true }); };
 
   if (pathname === '/' || pathname === '/login') {
-    if (user) return <Navigate to="/home" replace />;
+    if (user) return <Navigate to={user.role === 'admin' ? '/admin' : user.role === 'vendor' ? '/vendor' : '/shop'} replace />;
     return <><ScrollToTop /><AuthPage onSignUp={handleSignUp} onSignIn={handleSignIn} /></>;
   }
 
-  if (pathname === '/admin-login') {
+  if (pathname === '/admin/login') {
     if (user?.role === 'admin') return <Navigate to="/admin" replace />;
     return <><ScrollToTop /><AdminLoginPage onAuthenticated={handleAdminLogin} /></>;
   }
 
   if (pathname === '/admin') {
     return user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/login" replace />;
+  }
+
+  if (pathname === '/vendor/login') {
+    if (user?.role === 'vendor') return <Navigate to="/vendor" replace />;
+    return <><ScrollToTop /><VendorLoginPage onAuthenticated={handleVendorLogin} /></>;
+  }
+
+  if (pathname === '/vendor') {
+    return user?.role === 'vendor' ? <VendorPanel name={user.name} onLogout={() => { logout(); navigate('/vendor/login', { replace: true }); }} /> : <Navigate to="/login" replace />;
   }
 
   return (
@@ -797,7 +809,7 @@ export default function App() {
   return <BrowserRouter><AuthProvider><CartProvider><AppContent /></CartProvider></AuthProvider></BrowserRouter>;
 }
 
-interface UserProfile { name: string; email: string; phone: string; role: 'customer' | 'admin' }
+interface UserProfile { name: string; email: string; phone: string; role: 'customer' | 'vendor' | 'admin' }
 interface AuthCtx { user: UserProfile | null; signIn: (profile: UserProfile) => void; logout: () => void }
 const AuthContext = createContext<AuthCtx | null>(null);
 function useAuth() { const a = useContext(AuthContext); if (!a) throw new Error('no auth'); return a; }

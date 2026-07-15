@@ -134,7 +134,7 @@ export default function AuthPage({
               <CheckCircle2 size={12} /> Verified Platform
             </span>
           </div>
-          <p className="mt-5 text-center text-xs text-[#5B6B85]">Are you a staff member? <Link to="/admin-login" className="font-bold text-[#E0912A] hover:text-[#F2A93B]">Admin login</Link></p>
+          <p className="mt-5 text-center text-xs text-[#5B6B85]">Are you a staff member? <Link to="/admin/login" className="font-bold text-[#E0912A] hover:text-[#F2A93B]">Admin login</Link></p>
         </div>
       </div>
     </div>
