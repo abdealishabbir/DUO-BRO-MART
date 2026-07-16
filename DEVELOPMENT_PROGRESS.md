@@ -74,3 +74,9 @@ Implement verification and recovery emails, then move browser-held JWTs to secur
 - [x] SEO metadata, robots file, sitemap, load probe, backup script, and production runbook
 - [x] Full automated regression suite, migration check, typecheck, lint, and production build
 - [ ] Run staging load test, backup/restore drill, browser/accessibility QA, CDN/monitoring setup, and independent security assessment
+
+## Phase 7 — Growth & Post-Launch
+
+- [x] Referral codes, attribution, and usage tracking API
+- [x] Deployment handoff and release verification commands
+- [ ] Referral rewards, affiliates, abandoned-cart recovery, sponsored listings, subscriptions, and other post-launch backlog items
