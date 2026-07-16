@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 export default function FeedbackPage(): JSX.Element {
   const { orderId = '' } = useParams(); const [mode, setMode] = useState<'feedback' | 'complaint'>('feedback'); const [message, setMessage] = useState('');
   const submit = async (event: React.FormEvent<HTMLFormElement>) => { event.preventDefault(); const data = Object.fromEntries(new FormData(event.currentTarget).entries()); const endpoint = mode === 'feedback' ? `feedback/${orderId}/` : `complaints/${orderId}/`; const response = await fetch(`${API}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('duobro_access') || ''}` }, body: JSON.stringify(data) }); setMessage(response.ok ? 'Thank you. Your response was saved.' : 'Unable to submit this response.'); };

@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 export interface CatalogProduct { id: number; name: string; slug: string; description: string; price: string; image_url: string; discount_percent: number; average_rating: string; category_name: string; brand_name: string }
 export async function fetchCatalogProducts(filters: Record<string, string> = {}): Promise<{ items: CatalogProduct[]; count: number }> {
   const query = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([, value]) => value))).toString();

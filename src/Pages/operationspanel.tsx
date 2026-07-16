@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 type Props = { section: 'vendors' | 'pricing' | 'settings' | 'dashboard' | 'products' | 'banners' | 'orders' };
 type Application = { id: number; full_name: string; business_name: string; status: string };
 type Request = { id: number; kind: string; value: string; status: string };

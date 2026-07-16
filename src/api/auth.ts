@@ -1,8 +1,8 @@
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 export type PortalRole = 'customer' | 'vendor' | 'admin';
 
 export interface ApiUser { name: string; email: string; phone: string; role: PortalRole; email_verified: boolean; must_change_password: boolean }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 export const startSocialLogin = (provider: 'google' | 'facebook') => { window.location.assign(`${API_URL}/auth/social/${provider}/`); };
 
 async function request<T>(path: string, body: Record<string, string> = {}): Promise<T> {

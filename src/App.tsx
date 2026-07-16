@@ -17,6 +17,8 @@ import {
   ArrowRight, ShieldCheck, Truck, Phone, Mail, ChevronDown,
   CheckCircle, AlertCircle, AlertTriangle, Star, UserCircle, LogOut,
 } from 'lucide-react';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+const WS_URL = import.meta.env.VITE_WS_URL || `${window.location.origin.replace(/^http/, 'ws')}/ws/stock/`;
 /* ─── Scroll To Top on Route Change ─── */
 function ScrollToTop() { const { pathname } = useLocation(); useEffect(() => { window.scrollTo(0, 0); }, [pathname]); return null; }
 
@@ -35,8 +37,8 @@ function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>(() => { try { return JSON.parse(localStorage.getItem('duobro_cart') || '[]'); } catch { return []; } });
   const [cartOpen, setCartOpen] = useState(false);
   useEffect(() => { localStorage.setItem('duobro_cart', JSON.stringify(cart)); }, [cart]);
-  useEffect(() => { const access = localStorage.getItem('duobro_access'); if (!access) return; fetch('http://localhost:8000/api/cart/', { headers: { Authorization: `Bearer ${access}` } }).then(async (response) => { if (!response.ok) return; const data = await response.json() as { items: { product_id: number; name: string; price: string; quantity: number }[] }; if (data.items.length) setCart(data.items.map((item) => ({ id: item.product_id, name: item.name, price: Number(item.price), image: '', qty: item.quantity, discount: 0 }))); }).catch(() => undefined); }, []);
-  useEffect(() => { const access = localStorage.getItem('duobro_access'); if (!access) return; fetch('http://localhost:8000/api/cart/', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${access}` }, body: JSON.stringify(cart.map((item) => ({ product_id: item.id, quantity: item.qty }))) }).catch(() => undefined); }, [cart]);
+  useEffect(() => { const access = localStorage.getItem('duobro_access'); if (!access) return; fetch(`${API_URL}/cart/`, { headers: { Authorization: `Bearer ${access}` } }).then(async (response) => { if (!response.ok) return; const data = await response.json() as { items: { product_id: number; name: string; price: string; quantity: number }[] }; if (data.items.length) setCart(data.items.map((item) => ({ id: item.product_id, name: item.name, price: Number(item.price), image: '', qty: item.quantity, discount: 0 }))); }).catch(() => undefined); }, []);
+  useEffect(() => { const access = localStorage.getItem('duobro_access'); if (!access) return; fetch(`${API_URL}/cart/`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${access}` }, body: JSON.stringify(cart.map((item) => ({ product_id: item.id, quantity: item.qty }))) }).catch(() => undefined); }, [cart]);
   const addToCart = (item: Omit<CartItem, 'qty'>) => setCart((p) => { const e = p.find((i) => i.id === item.id); return e ? p.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i) : [...p, { ...item, qty: 1 }]; });
   const changeQty = (id: number, d: number) => setCart((p) => p.map((i) => i.id === id ? { ...i, qty: i.qty + d } : i).filter((i) => i.qty > 0));
   const removeItem = (id: number) => setCart((p) => p.filter((i) => i.id !== id));
@@ -318,59 +320,235 @@ const PRODUCTS: Product[] = [
   { id:305, name:"Retractable Wall Dryer", price:1999, category:"Drying Stands", group:"household", image:"", discount:0, desc:"5 extendable arms, mounts indoors or outdoors" },
 ];
 const GROUPS = [{ key: 'all', label: 'All Products' }, { key: 'fashion', label: 'Fashion' }, { key: 'household', label: 'Household' }, { key: 'kitchen', label: 'Kitchen' }, { key: 'beauty', label: 'Beauty' }];
+const BRANDS = ['Aura', 'Nexus Tech', 'Lumina Home', 'Strive', 'Urban Decor'];
 
 function ShopPage() {
   const { addToCart } = useCart();
   const [liveProducts, setLiveProducts] = useState<Product[]>([]);
-  const [brand, setBrand] = useState(''); const [minPrice, setMinPrice] = useState(''); const [maxPrice, setMaxPrice] = useState(''); const [minRating, setMinRating] = useState(''); const [page, setPage] = useState(1); const [total, setTotal] = useState(0);
-  const [activeGroup, setActiveGroup] = useState('all');
-  const [activeSubCat, setActiveSubCat] = useState('all');
+  const [search, setSearch] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [sort, setSort] = useState('Newest Arrivals');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [addedId, setAddedId] = useState<number | null>(null);
   const [toast, setToast] = useState('');
+
   const catalogProducts = liveProducts.length ? liveProducts : PRODUCTS;
-  const subCats = activeGroup === 'all' ? [...new Set(catalogProducts.map((p) => p.category))].sort() : [...new Set(catalogProducts.filter((p) => p.group === activeGroup).map((p) => p.category))].sort();
-  const filtered = catalogProducts.filter((p) => (activeGroup === 'all' || p.group === activeGroup) && (activeSubCat === 'all' || p.category === activeSubCat));
-  const handleAdd = (p: Product) => { addToCart({ id: p.id, name: p.name, price: p.price, image: p.image, discount: p.discount || 0 }); setAddedId(p.id); setToast(`${p.name} added to cart`); setTimeout(() => setAddedId(null), 1500); setTimeout(() => setToast(''), 2200); };
-  useEffect(() => { setActiveSubCat('all'); }, [activeGroup]);
-  useEffect(() => { setPage(1); }, [activeSubCat, brand, minPrice, maxPrice, minRating]);
-  useEffect(() => { fetchCatalogProducts({ page: String(page), category: activeSubCat === 'all' ? '' : activeSubCat.toLowerCase().replace(/ /g, '-'), brand, min_price: minPrice, max_price: maxPrice, min_rating: minRating }).then(({ items, count }) => { setTotal(count); setLiveProducts(items.map((item) => ({ id: item.id, name: item.name, price: Number(item.price), category: item.category_name, group: 'all', image: item.image_url, discount: item.discount_percent, desc: item.description }))); }).catch(() => undefined); }, [activeSubCat, brand, maxPrice, minPrice, minRating, page]);
-  useEffect(() => { const socket = new WebSocket('ws://localhost:8000/ws/stock/'); socket.onmessage = () => { fetchCatalogProducts({ page: String(page) }).then(({ items }) => setLiveProducts(items.map((item) => ({ id: item.id, name: item.name, price: Number(item.price), category: item.category_name, group: 'all', image: item.image_url, discount: item.discount_percent, desc: item.description })))).catch(() => undefined); }; return () => socket.close(); }, [page]);
+  const categories = [...new Set(catalogProducts.map((product) => product.category))].sort();
+  const brands = BRANDS;
+
+  const getBrand = (product: Product) => brands[product.id % brands.length];
+  const filtered = catalogProducts.filter((product) => {
+    const searchValue = search.trim().toLowerCase();
+    const matchesSearch = !searchValue || product.name.toLowerCase().includes(searchValue) || product.category.toLowerCase().includes(searchValue) || getBrand(product).toLowerCase().includes(searchValue);
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+    const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(getBrand(product));
+    const matchesMin = !minPrice || product.price >= Number(minPrice);
+    const matchesMax = !maxPrice || product.price <= Number(maxPrice);
+    return matchesSearch && matchesCategory && matchesBrand && matchesMin && matchesMax;
+  });
+
+  const sorted = filtered.slice().sort((a, b) => {
+    if (sort === 'Price: Low to High') return a.price - b.price;
+    if (sort === 'Price: High to Low') return b.price - a.price;
+    if (sort === 'Best Sellers') return b.id - a.id;
+    return b.id - a.id;
+  });
+
+  const handleAdd = (product: Product) => {
+    addToCart({ id: product.id, name: product.name, price: product.price, image: product.image, discount: product.discount || 0 });
+    setAddedId(product.id);
+    setToast(`${product.name} added to cart`);
+    setTimeout(() => setAddedId(null), 1500);
+    setTimeout(() => setToast(''), 2200);
+  };
+
+  const toggleCategory = (category: string) => setSelectedCategories((prev) => prev.includes(category) ? prev.filter((item) => item !== category) : [...prev, category]);
+  const toggleBrand = (brand: string) => setSelectedBrands((prev) => prev.includes(brand) ? prev.filter((item) => item !== brand) : [...prev, brand]);
+
+  useEffect(() => {
+    fetchCatalogProducts({ page: String(page) }).then(({ items, count }) => {
+      setTotal(count);
+      setLiveProducts(items.map((item) => ({ id: item.id, name: item.name, price: Number(item.price), category: item.category_name, group: 'all', image: item.image_url, discount: item.discount_percent, desc: item.description })));
+    }).catch(() => undefined);
+  }, [page]);
+
+  useEffect(() => {
+    const socket = new WebSocket(WS_URL);
+    socket.onmessage = () => {
+      fetchCatalogProducts({ page: String(page) }).then(({ items }) => setLiveProducts(items.map((item) => ({ id: item.id, name: item.name, price: Number(item.price), category: item.category_name, group: 'all', image: item.image_url, discount: item.discount_percent, desc: item.description })))).catch(() => undefined);
+    };
+    return () => socket.close();
+  }, [page]);
 
   return (
-    <div className="pt-20">
-      <div className="max-w-[1200px] mx-auto px-5 py-8">
-        <div className="mb-6"><h2 className="font-['Playfair_Display'] text-[clamp(26px,5vw,40px)] font-bold">Our Collection</h2><p className="text-[13px] text-[var(--muted)] mt-1">Fashion & household essentials, curated for you</p></div>
-        <div className="flex gap-2 flex-wrap mb-3">
-          {GROUPS.map((g) => <button key={g.key} onClick={() => setActiveGroup(g.key)} className={`px-5 py-2.5 rounded-full border-2 text-sm font-semibold transition-all duration-200 ${activeGroup === g.key ? (g.key === 'household' ? 'bg-[var(--teal)] border-[var(--teal)] text-white' : g.key === 'kitchen' ? 'bg-[var(--kitchen)] border-[var(--kitchen)] text-white' : g.key === 'beauty' ? 'bg-[#D4639A] border-[#D4639A] text-white' : 'bg-[var(--charcoal)] border-[var(--charcoal)] text-white') : 'bg-white border-[var(--border)] text-[var(--charcoal)] hover:border-[var(--accent)] hover:text-[var(--accent-dark)]'}`}>{g.label}</button>)}
-        </div>
-        <div className="flex items-center gap-2 flex-wrap mb-7 p-3 bg-white border border-[var(--border)] rounded-[10px]">
-          <span className="text-[10px] font-bold tracking-[1.2px] text-[var(--muted)] uppercase mr-1">Filter:</span>
-          <button onClick={() => setActiveSubCat('all')} className={`px-4 py-1.5 rounded-full border-[1.5px] text-xs font-medium transition-all duration-200 ${activeSubCat === 'all' ? 'bg-[var(--charcoal)] text-white border-[var(--charcoal)]' : 'bg-[var(--cream)] border-[var(--border)] text-[var(--charcoal)] hover:border-[var(--accent)]'}`}>All</button>
-          {subCats.map((c) => <button key={c} onClick={() => setActiveSubCat(c)} className={`px-4 py-1.5 rounded-full border-[1.5px] text-xs font-medium transition-all duration-200 ${activeSubCat === c ? (activeGroup === 'household' ? 'bg-[var(--teal)] text-white border-[var(--teal)]' : activeGroup === 'kitchen' ? 'bg-[var(--kitchen)] text-white border-[var(--kitchen)]' : activeGroup === 'beauty' ? 'bg-[#D4639A] text-white border-[#D4639A]' : 'bg-[var(--charcoal)] text-white border-[var(--charcoal)]') : 'bg-[var(--cream)] border-[var(--border)] text-[var(--charcoal)] hover:border-[var(--accent)]'}`}>{c}</button>)}
-        </div>
-        <div className="mb-7 grid gap-3 rounded-xl border border-[var(--border)] bg-white p-4 sm:grid-cols-4"><input value={minPrice} onChange={(e) => setMinPrice(e.target.value)} type="number" min="0" placeholder="Min price" className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm" /><input value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} type="number" min="0" placeholder="Max price" className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm" /><input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Brand slug" className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm" /><select value={minRating} onChange={(e) => setMinRating(e.target.value)} className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm"><option value="">Any rating</option><option value="4">4★ & up</option><option value="3">3★ & up</option><option value="2">2★ & up</option></select></div>
-        {filtered.length === 0 ? <div className="text-center py-12 text-[var(--muted)]">No products in this category yet.</div> : (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-2 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((p) => (
-              <div key={p.id} className={`bg-white rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(28,28,30,0.08)] border border-[var(--border)] transition-all duration-250 hover:-translate-y-1 hover:shadow-[0_12px_48px_rgba(28,28,30,0.15)] flex flex-col ${p.group === 'household' ? 'border-l-[3px] border-l-[#B8D9D3]' : ''} ${p.group === 'kitchen' ? 'border-l-[3px] border-l-[#F4C49A]' : ''}`}>
-                <Link to={`/product/${p.id}`} className={`w-full overflow-hidden bg-[#F0EBE5] relative aspect-square`}>
-                  <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-400 hover:scale-105" />
-                  <span className={`absolute top-1.5 left-1.5 md:top-2.5 md:left-2.5 text-[8px] md:text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 md:px-2.5 md:py-1 rounded-full backdrop-blur-[8px] ${p.group === 'household' ? 'text-[var(--teal)] bg-[rgba(237,246,244,0.95)]' : p.group === 'kitchen' ? 'text-[var(--kitchen)] bg-[rgba(253,240,232,0.95)]' : p.group === 'beauty' ? 'text-[#D4639A] bg-[rgba(252,236,246,0.95)]' : 'text-[var(--warm-brown)] bg-[rgba(250,248,244,0.92)]'}`}>{p.category}</span>
-                </Link>
-                <div className="p-2.5 md:p-3.5 flex flex-col gap-1 flex-1">
-                  <Link to={`/product/${p.id}`} className="text-xs md:text-sm font-semibold leading-snug hover:text-[var(--accent)] transition-colors">{p.name}</Link>
-                  <div className="font-['Playfair_Display'] text-sm md:text-lg font-bold text-[var(--accent-dark)] mt-0.5">Rs {p.price.toLocaleString()}</div>
-                  <button onClick={() => handleAdd(p)} className={`mt-1.5 md:mt-2.5 w-full py-2 md:py-2.5 rounded-full text-[11px] md:text-[13px] font-semibold border-none cursor-pointer transition-all duration-200 ${addedId === p.id ? 'bg-[var(--green)] text-white' : 'bg-[var(--charcoal)] text-white hover:bg-[var(--warm-brown)]'}`}>{addedId === p.id ? 'Added' : 'Add to Cart'}</button>
+    <div className="pt-20 pb-16 bg-[var(--cream)]">
+      <div className="relative overflow-hidden">
+        <div className="absolute left-0 top-[-150px] h-[420px] w-[420px] rounded-full bg-[rgba(200,149,108,0.18)] blur-3xl" />
+        <div className="max-w-[1200px] mx-auto px-5">
+          <section className="rounded-[32px] border border-[var(--border)] bg-white p-8 shadow-[0_30px_80px_rgba(28,28,30,0.08)] mb-10">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <div className="mb-4 text-[11px] font-semibold uppercase tracking-[2px] text-[var(--muted)]">Home <span className="mx-2">/</span> Shop</div>
+                <h1 className="font-['Playfair_Display'] text-[clamp(34px,4vw,52px)] font-bold leading-tight">Shop Nest essentials for every room.</h1>
+                <p className="mt-4 max-w-xl text-[15px] leading-7 text-[var(--muted)]">Discover trending products, fashion best-sellers, and home essentials with fast delivery, easy filtering, and modern curated collections.</p>
+              </div>
+              <div className="rounded-3xl bg-[var(--cream)] p-4 shadow-sm border border-[var(--border)] w-full max-w-[480px]">
+                <div className="flex items-center gap-3 rounded-full bg-white p-3 shadow-sm border border-[var(--border)]">
+                  <Search size={18} className="text-[var(--muted)]" />
+                  <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products, brands and more" className="w-full bg-transparent text-sm outline-none placeholder:text-[var(--muted)]" />
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl bg-white p-4 border border-[var(--border)]">
+                    <p className="text-[10px] uppercase tracking-[1.8px] text-[var(--muted)]">Products</p>
+                    <p className="mt-2 text-2xl font-bold text-[var(--charcoal)]">{catalogProducts.length}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 border border-[var(--border)]">
+                    <p className="text-[10px] uppercase tracking-[1.8px] text-[var(--muted)]">Top category</p>
+                    <p className="mt-2 text-2xl font-bold text-[var(--charcoal)]">Fashion</p>
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
+          </section>
+
+          <section className="mb-10">
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[2px] text-[var(--accent)] mb-2">Trending This Week</p>
+                <h2 className="font-['Playfair_Display'] text-3xl font-bold">Best deals for every room</h2>
+              </div>
+              <div className="text-sm text-[var(--muted)]">Limited time offers with fast delivery and premium support.</div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {featuredProducts.slice(0, 4).map((product) => (
+                <div key={product.id} className="rounded-[28px] border border-[var(--border)] bg-white overflow-hidden shadow-[0_24px_60px_rgba(28,28,30,0.08)]">
+                  <div className="relative overflow-hidden bg-[#F8F3EE] aspect-[4/5]">
+                    <img src={product.image} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
+                    <span className="absolute top-4 left-4 rounded-full bg-[var(--accent)] px-3 py-1 text-[11px] font-bold uppercase tracking-[1px] text-white shadow-sm">Hot</span>
+                  </div>
+                  <div className="p-5">
+                    <p className="text-[11px] uppercase tracking-[2px] text-[var(--muted)] mb-2">{product.category}</p>
+                    <h3 className="text-lg font-semibold text-[var(--charcoal)] leading-tight">{product.name}</h3>
+                    <div className="mt-4 flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-[var(--muted)]">Best deal</p>
+                        <p className="font-['Playfair_Display'] text-xl font-bold text-[var(--accent-dark)]">Rs {Number(product.price).toLocaleString()}</p>
+                      </div>
+                      <button onClick={() => handleAdd(product)} className="rounded-full bg-[var(--charcoal)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--warm-brown)]">Add</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
+            <aside className="rounded-[32px] border border-[var(--border)] bg-white p-6 shadow-sm">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-[1.6px] text-[var(--muted)] mb-4">Filters</h3>
+                  <div className="rounded-3xl bg-[var(--cream)] p-4">
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-sm font-semibold text-[var(--charcoal)] mb-3">Categories</h4>
+                        <div className="space-y-3">
+                          {categories.map((category) => (
+                            <label key={category} className="flex items-center gap-3 text-sm text-[var(--charcoal)]">
+                              <input type="checkbox" checked={selectedCategories.includes(category)} onChange={() => toggleCategory(category)} className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)]" />
+                              <span>{category}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-[var(--charcoal)] mb-3">Brands</h4>
+                        <div className="space-y-3">
+                          {brands.map((brandName) => (
+                            <label key={brandName} className="flex items-center gap-3 text-sm text-[var(--charcoal)]">
+                              <input type="checkbox" checked={selectedBrands.includes(brandName)} onChange={() => toggleBrand(brandName)} className="h-4 w-4 rounded border-[var(--border)] text-[var(--accent)]" />
+                              <span>{brandName}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-[var(--charcoal)] mb-3">Price range</h4>
+                        <div className="grid gap-3">
+                          <input value={minPrice} onChange={(event) => setMinPrice(event.target.value)} placeholder="Min" type="number" className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm outline-none" />
+                          <input value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} placeholder="Max" type="number" className="rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm outline-none" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => { setSelectedCategories([]); setSelectedBrands([]); setMinPrice(''); setMaxPrice(''); setSearch(''); }} className="w-full rounded-full border border-[var(--border)] bg-white py-3 text-sm font-semibold text-[var(--charcoal)] transition hover:bg-[var(--cream)]">Clear filters</button>
+              </div>
+            </aside>
+
+            <main>
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-[var(--muted)]">Showing {sorted.length} products</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="text-sm font-semibold text-[var(--muted)]">Sort by</label>
+                  <select value={sort} onChange={(event) => setSort(event.target.value)} className="rounded-full border border-[var(--border)] bg-white px-4 py-3 text-sm outline-none">
+                    <option>Newest Arrivals</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to Low</option>
+                    <option>Best Sellers</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {sorted.map((product) => {
+                  const brandName = getBrand(product);
+                  const imageUrl = product.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80';
+                  return (
+                    <div key={product.id} className="group overflow-hidden rounded-[28px] border border-[var(--border)] bg-white shadow-[0_18px_40px_rgba(28,28,30,0.06)] transition-all duration-300 hover:-translate-y-1">
+                      <Link to={`/product/${product.id}`} className="block overflow-hidden bg-[#F8F3EE] aspect-square">
+                        <img src={imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      </Link>
+                      <div className="p-5">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="rounded-full bg-[rgba(200,149,108,0.1)] px-3 py-1 text-xs font-semibold uppercase tracking-[1px] text-[var(--accent-dark)]">{product.category}</span>
+                          {product.discount ? <span className="rounded-full bg-[#FEE2E2] px-2.5 py-1 text-[11px] font-bold text-[#B91C1C]">-{product.discount}%</span> : null}
+                        </div>
+                        <div className="mt-4 text-sm font-semibold text-[var(--charcoal)] leading-snug">{product.name}</div>
+                        <div className="mt-3 flex items-center justify-between gap-4">
+                          <div>
+                            <div className="text-xs uppercase tracking-[1px] text-[var(--muted)]">{brandName}</div>
+                            <div className="font-['Playfair_Display'] text-lg font-bold text-[var(--accent-dark)]">Rs {product.price.toLocaleString()}</div>
+                          </div>
+                          <button onClick={() => handleAdd(product)} className="rounded-full bg-[var(--charcoal)] px-4 py-2 text-xs font-semibold uppercase tracking-[1px] text-white transition hover:bg-[var(--warm-brown)]">Add</button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-3 bg-white rounded-[32px] border border-[var(--border)] p-4 text-sm text-[var(--muted)]">
+                <span>{sorted.length} products found</span>
+                <div className="flex gap-2">
+                  <button disabled={page === 1} onClick={() => setPage((value) => Math.max(1, value - 1))} className="rounded-full border border-[var(--border)] bg-white px-4 py-2 disabled:opacity-40">Previous</button>
+                  <button onClick={() => setPage((value) => value + 1)} className="rounded-full border border-[var(--border)] bg-white px-4 py-2">Next</button>
+                </div>
+              </div>
+            </main>
           </div>
-        )}
+        </div>
       </div>
-      {total > 20 && <div className="mx-auto mb-8 flex justify-center gap-3"><button disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="rounded-full border px-4 py-2 disabled:opacity-40">Previous</button><span className="py-2 text-sm">Page {page}</span><button disabled={page * 20 >= total} onClick={() => setPage((value) => value + 1)} className="rounded-full border px-4 py-2 disabled:opacity-40">Next</button></div>}
+
       <div className="fixed bottom-6 right-5 flex flex-col items-end gap-3 z-[150]">
         <a href="https://wa.me/923313146400" target="_blank" rel="noopener noreferrer" className="w-[52px] h-[52px] rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-[0_4px_20px_rgba(28,28,30,0.2)] transition-all duration-200 hover:scale-110" title="Chat on WhatsApp"><MessageCircle size={24} /></a>
       </div>
+
       {toast && <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[var(--charcoal)] text-white px-5 py-2.5 rounded-full text-[13px] font-medium z-[300] whitespace-nowrap pointer-events-none">{toast}</div>}
     </div>
   );
@@ -655,7 +833,7 @@ function VendorRegisterPage() {
     if (!cnicBack) { setError('Back side of CNIC is required for identity verification'); setSubmitting(false); return; }
     if (!fd.get('agreeTerms')) { setError('You must agree to the vendor terms'); setSubmitting(false); return; }
     try {
-      const res = await fetch('http://localhost:8000/api/vendor/apply/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: `${fd.get('firstName')} ${fd.get('lastName')}`, email, phone: fd.get('phone'), business_name: fd.get('businessName'), province: fd.get('province'), city: fd.get('city'), product_description: fd.get('productDescription'), cnic_reference: `${cnicFront.name}, ${cnicBack.name}` }) });
+      const res = await fetch(`${API_URL}/vendor/apply/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: `${fd.get('firstName')} ${fd.get('lastName')}`, email, phone: fd.get('phone'), business_name: fd.get('businessName'), province: fd.get('province'), city: fd.get('city'), product_description: fd.get('productDescription'), cnic_reference: `${cnicFront.name}, ${cnicBack.name}` }) });
       if (res.ok) { setSuccess(true); (e.target as HTMLFormElement).reset(); setCnicFront(null); setCnicBack(null); setCnicFrontPreview(''); setCnicBackPreview(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       else setError('Failed to submit application. Please try again.');
     } catch { setError('Network error. Please check your connection.'); }
@@ -753,7 +931,7 @@ function ProfilePage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [referral, setReferral] = useState('');
-  useEffect(() => { const access = localStorage.getItem('duobro_access'); if (access) fetch('http://localhost:8000/api/growth/referral/', { headers: { Authorization: `Bearer ${access}` } }).then((response) => response.json()).then((data: { code?: string }) => setReferral(data.code || '')).catch(() => undefined); }, []);
+  useEffect(() => { const access = localStorage.getItem('duobro_access'); if (access) fetch(`${API_URL}/growth/referral/`, { headers: { Authorization: `Bearer ${access}` } }).then((response) => response.json()).then((data: { code?: string }) => setReferral(data.code || '')).catch(() => undefined); }, []);
   if (!user) return <Navigate to="/login" replace />;
   const initials = user.name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
   const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
@@ -770,7 +948,7 @@ function ProfilePage() {
   );
 }
 
-function LiveBanners() { const [banners, setBanners] = useState<{ id: number; title: string; subtitle: string; image_url: string; cta_url: string }[]>([]); useEffect(() => { fetch('http://localhost:8000/api/banners/').then((response) => response.json()).then((data: { results: { id: number; title: string; subtitle: string; image_url: string; cta_url: string }[] }) => setBanners(data.results || [])).catch(() => undefined); }, []); if (!banners.length) return null; const banner = banners[0]; return <Link to={banner.cta_url} className="mt-16 block bg-[#101A2E] text-white"><div className="mx-auto flex max-w-[1200px] items-center gap-5 p-4"><img src={banner.image_url} alt="" className="h-16 w-24 rounded object-cover" /><div><strong>{banner.title}</strong><p className="text-sm text-white/75">{banner.subtitle}</p></div></div></Link>; }
+function LiveBanners() { const [banners, setBanners] = useState<{ id: number; title: string; subtitle: string; image_url: string; cta_url: string }[]>([]); useEffect(() => { fetch(`${API_URL}/banners/`).then((response) => response.json()).then((data: { results: { id: number; title: string; subtitle: string; image_url: string; cta_url: string }[] }) => setBanners(data.results || [])).catch(() => undefined); }, []); if (!banners.length) return null; const banner = banners[0]; return <Link to={banner.cta_url} className="mt-16 block bg-[#101A2E] text-white"><div className="mx-auto flex max-w-[1200px] items-center gap-5 p-4"><img src={banner.image_url} alt="" className="h-16 w-24 rounded object-cover" /><div><strong>{banner.title}</strong><p className="text-sm text-white/75">{banner.subtitle}</p></div></div></Link>; }
 
 function CheckoutPage({ step }: { step: 'shipping' | 'payment' | 'confirmation' }) {
   const { cart, clearCart } = useCart(); const navigate = useNavigate(); const [message, setMessage] = useState('');
