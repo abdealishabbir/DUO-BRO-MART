@@ -67,3 +67,10 @@ Implement verification and recovery emails, then move browser-held JWTs to secur
 - [x] Public banner display and customer feedback/complaint screen
 - [x] Customer/vendor terms and vendor-onboarding content are available in the storefront
 - [x] Phase 1–5 combined verification
+
+## Phase 6 — Hardening, Testing & Launch
+
+- [x] Production security defaults, health endpoint, Redis-ready cache, and Docker Redis service
+- [x] SEO metadata, robots file, sitemap, load probe, backup script, and production runbook
+- [x] Full automated regression suite, migration check, typecheck, lint, and production build
+- [ ] Run staging load test, backup/restore drill, browser/accessibility QA, CDN/monitoring setup, and independent security assessment

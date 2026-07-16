@@ -44,6 +44,19 @@ TIME_ZONE = "Asia/Karachi"
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = "static/"
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+REFERRER_POLICY = "same-origin"
+if os.environ.get("USE_SQLITE") == "True":
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+else:
+    CACHES = {"default": {"BACKEND": "django_redis.cache.RedisCache", "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/1"), "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"}}}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
