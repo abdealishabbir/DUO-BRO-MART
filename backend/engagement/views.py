@@ -23,7 +23,8 @@ class FeedbackView(APIView):
         order = Order.objects.get(code=code, customer=request.user, status="delivered")
         serializer = FeedbackSerializer(data=request.data); serializer.is_valid(raise_exception=True)
         product = order.items.first().product
-        item = Feedback.objects.create(order=order, product=product, customer=request.user, **serializer.validated_data)
+        values = dict(serializer.validated_data); values.pop("product", None)
+        item = Feedback.objects.create(order=order, product=product, customer=request.user, **values)
         product.average_rating = Feedback.objects.filter(product=product).aggregate(value=Avg("overall"))["value"] or 0; product.save(update_fields=["average_rating"])
         return Response({"id": item.pk}, status=201)
 class ComplaintView(APIView):

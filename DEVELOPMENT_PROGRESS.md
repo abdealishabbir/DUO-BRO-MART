@@ -58,3 +58,12 @@ Implement verification and recovery emails, then move browser-held JWTs to secur
 - [x] Order operations and payment-gateway settings APIs
 - [x] Real-time stock WebSocket endpoint and storefront refresh listener
 - [x] Phase 4 API/frontend verification
+
+## Phase 5 — Banners, Feedback & Content
+
+- [x] Vendor banner applications, admin approval, scheduled publishing, and automatic expiry
+- [x] Delivered-order feedback and wrong-product complaint flows
+- [x] Product rating aggregation and rating-filter data support
+- [x] Public banner display and customer feedback/complaint screen
+- [x] Customer/vendor terms and vendor-onboarding content are available in the storefront
+- [x] Phase 1–5 combined verification

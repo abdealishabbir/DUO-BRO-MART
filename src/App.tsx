@@ -224,6 +224,7 @@ function HomePage() {
   const homepageFeatured = liveFeatured.length ? liveFeatured : featuredProducts;
   return (
     <div>
+      <LiveBanners />
       <section className="relative h-screen min-h-[600px] overflow-hidden flex items-center justify-center text-center mt-16">
         <img src="https://images.pexels.com/photos/3962286/pexels-photo-3962286.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="DUOBRO MART" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-br from-[rgba(28,28,30,0.5)] via-[rgba(28,28,30,0.2)] to-[rgba(139,111,90,0.3)]" />
@@ -767,6 +768,8 @@ function ProfilePage() {
   );
 }
 
+function LiveBanners() { const [banners, setBanners] = useState<{ id: number; title: string; subtitle: string; image_url: string; cta_url: string }[]>([]); useEffect(() => { fetch('http://localhost:8000/api/banners/').then((response) => response.json()).then((data: { results: { id: number; title: string; subtitle: string; image_url: string; cta_url: string }[] }) => setBanners(data.results || [])).catch(() => undefined); }, []); if (!banners.length) return null; const banner = banners[0]; return <Link to={banner.cta_url} className="mt-16 block bg-[#101A2E] text-white"><div className="mx-auto flex max-w-[1200px] items-center gap-5 p-4"><img src={banner.image_url} alt="" className="h-16 w-24 rounded object-cover" /><div><strong>{banner.title}</strong><p className="text-sm text-white/75">{banner.subtitle}</p></div></div></Link>; }
+
 function CheckoutPage({ step }: { step: 'shipping' | 'payment' | 'confirmation' }) {
   const { cart, clearCart } = useCart(); const navigate = useNavigate(); const [message, setMessage] = useState('');
   const saved = JSON.parse(localStorage.getItem('duobro_shipping') || '{}') as Record<string, string>;
@@ -825,6 +828,7 @@ function AppContent() {
   if (pathname === '/checkout/payment') return <CheckoutPage step="payment" />;
   if (pathname === '/checkout/confirmation') return <CheckoutPage step="confirmation" />;
   if (pathname === '/track-order') return <TrackOrderPage />;
+  if (pathname.startsWith('/feedback/')) return <FeedbackPage />;
   if (pathname.startsWith('/feedback/')) return <FeedbackPage />;
   if (pathname === '/social-callback') return <SocialCallbackPage onComplete={(profile, access) => { localStorage.setItem('duobro_access', access); signIn(profile); navigate('/shop', { replace: true }); }} />;
 
