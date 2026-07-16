@@ -62,3 +62,8 @@ class AdminRequestDecisionView(APIView):
             if item.kind == "restock": item.product.stock += int(item.value); item.product.save(update_fields=["stock"])
             if item.kind == "price": item.product.price = item.value; item.product.save(update_fields=["price"])
         return Response(ChangeRequestSerializer(item).data)
+
+class AdminRequestsView(generics.ListAPIView):
+    serializer_class = ChangeRequestSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = ChangeRequest.objects.all()

@@ -49,3 +49,12 @@ Implement verification and recovery emails, then move browser-held JWTs to secur
 - [x] Admin order-status API with shipped/delivered transaction emails
 - [x] Atomic stock reservation with database row locking and oversell prevention
 - [ ] Activate card/wallet providers with their merchant credentials and client tokenization SDKs
+
+## Phase 4 — Admin & Vendor Operations
+
+- [x] Vendor application submission, admin approval, credential email, and forced password change
+- [x] Vendor product submission plus price, deal, and restock request workflow
+- [x] Admin dashboard metrics, product approval queue, vendor approval queue, pricing/restock decisions, and shipping settings controls
+- [x] Order operations and payment-gateway settings APIs
+- [x] Real-time stock WebSocket endpoint and storefront refresh listener
+- [x] Phase 4 API/frontend verification

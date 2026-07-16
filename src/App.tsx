@@ -9,6 +9,7 @@ import { login, registerCustomer, startSocialLogin } from './api/auth';
 import AccountActionPage from './Pages/accountaction';
 import VendorPasswordPage from './Pages/vendorpassword';
 import SocialCallbackPage from './Pages/socialcallback';
+import FeedbackPage from './Pages/feedback';
 import { fetchCatalogProduct, fetchCatalogProducts, fetchHomeCatalog } from './api/catalog';
 import { checkout, trackOrder } from './api/orders';
 import {
@@ -332,6 +333,7 @@ function ShopPage() {
   useEffect(() => { setActiveSubCat('all'); }, [activeGroup]);
   useEffect(() => { setPage(1); }, [activeSubCat, brand, minPrice, maxPrice, minRating]);
   useEffect(() => { fetchCatalogProducts({ page: String(page), category: activeSubCat === 'all' ? '' : activeSubCat.toLowerCase().replace(/ /g, '-'), brand, min_price: minPrice, max_price: maxPrice, min_rating: minRating }).then(({ items, count }) => { setTotal(count); setLiveProducts(items.map((item) => ({ id: item.id, name: item.name, price: Number(item.price), category: item.category_name, group: 'all', image: item.image_url, discount: item.discount_percent, desc: item.description }))); }).catch(() => undefined); }, [activeSubCat, brand, maxPrice, minPrice, minRating, page]);
+  useEffect(() => { const socket = new WebSocket('ws://localhost:8000/ws/stock/'); socket.onmessage = () => { fetchCatalogProducts({ page: String(page) }).then(({ items }) => setLiveProducts(items.map((item) => ({ id: item.id, name: item.name, price: Number(item.price), category: item.category_name, group: 'all', image: item.image_url, discount: item.discount_percent, desc: item.description })))).catch(() => undefined); }; return () => socket.close(); }, [page]);
 
   return (
     <div className="pt-20">
@@ -651,10 +653,8 @@ function VendorRegisterPage() {
     if (!cnicFront) { setError('Front side of CNIC is required for identity verification'); setSubmitting(false); return; }
     if (!cnicBack) { setError('Back side of CNIC is required for identity verification'); setSubmitting(false); return; }
     if (!fd.get('agreeTerms')) { setError('You must agree to the vendor terms'); setSubmitting(false); return; }
-    const data: Record<string, string> = { _subject: `New Vendor Registration: ${fd.get('businessName')}`, 'First Name': fd.get('firstName') as string, 'Last Name': fd.get('lastName') as string, Email: email, Phone: fd.get('phone') as string, 'Business Name': fd.get('businessName') as string, 'Business Type': fd.get('businessType') as string, City: fd.get('city') as string, Province: fd.get('province') as string, 'Business Address': fd.get('businessAddress') as string, 'Product Description': fd.get('productDescription') as string, 'Experience (Years)': (fd.get('experience') as string) || '0', 'Marketing Consent': fd.get('agreeMarketing') === 'on' ? 'Yes' : 'No', 'Registration Date': new Date().toISOString() };
     try {
-      const sd = new FormData(); Object.entries(data).forEach(([k, v]) => sd.append(k, v));
-      const res = await fetch('https://formspree.io/f/xojvqpqr', { method: 'POST', body: sd, headers: { Accept: 'application/json' } });
+      const res = await fetch('http://localhost:8000/api/vendor/apply/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ full_name: `${fd.get('firstName')} ${fd.get('lastName')}`, email, phone: fd.get('phone'), business_name: fd.get('businessName'), province: fd.get('province'), city: fd.get('city'), product_description: fd.get('productDescription'), cnic_reference: `${cnicFront.name}, ${cnicBack.name}` }) });
       if (res.ok) { setSuccess(true); (e.target as HTMLFormElement).reset(); setCnicFront(null); setCnicBack(null); setCnicFrontPreview(''); setCnicBackPreview(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       else setError('Failed to submit application. Please try again.');
     } catch { setError('Network error. Please check your connection.'); }
@@ -825,6 +825,7 @@ function AppContent() {
   if (pathname === '/checkout/payment') return <CheckoutPage step="payment" />;
   if (pathname === '/checkout/confirmation') return <CheckoutPage step="confirmation" />;
   if (pathname === '/track-order') return <TrackOrderPage />;
+  if (pathname.startsWith('/feedback/')) return <FeedbackPage />;
   if (pathname === '/social-callback') return <SocialCallbackPage onComplete={(profile, access) => { localStorage.setItem('duobro_access', access); signIn(profile); navigate('/shop', { replace: true }); }} />;
 
   if (pathname === '/vendor/login') {

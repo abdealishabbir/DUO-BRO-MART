@@ -10,7 +10,7 @@ ALLOWED_HOSTS = [host.strip() for host in os.environ.get("DJANGO_ALLOWED_HOSTS",
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes", "django.contrib.sessions",
     "django.contrib.messages", "django.contrib.staticfiles", "rest_framework", "rest_framework_simplejwt.token_blacklist",
-    "corsheaders", "accounts", "catalog", "orders", "operations",
+    "corsheaders", "channels", "accounts", "catalog", "orders", "operations", "engagement",
 ]
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware", "django.middleware.security.SecurityMiddleware",
@@ -24,6 +24,8 @@ TEMPLATES = [{"BACKEND": "django.template.backends.django.DjangoTemplates", "DIR
     "django.contrib.messages.context_processors.messages",
 ]}}]
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 # PostgreSQL is the application database. SQLite is available only for isolated local tests.
 if os.environ.get("USE_SQLITE") == "True":
